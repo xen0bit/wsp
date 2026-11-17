@@ -51,7 +51,7 @@ levers: a lever two overlays share is applied once; conflicting gains multiply (
 counterfactual stories, a slice of openjev authored144). It measures collateral drift; `wsp overlay
 verify` re-checks an overlay on the full 774-item panel.
 
-Trials are hot-patched: `llama-server --wsp-patch` (fork branch `wsp`) writes the edited bytes into
+Trials are hot-patched: `llama-server --wsp-patch` (fork PR #3) writes the edited bytes into
 the loaded weights, the slot cache is erased, the panel runs, and the original bytes are written
 back. Results are bit-identical to writing a GGUF and reloading.
 

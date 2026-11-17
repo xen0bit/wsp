@@ -14,11 +14,11 @@ Read this whole file before changing panels, axes, or the search loop.
 
 ### llama.cpp fork (xen0bit/llama.cpp)
 
-The fork adds `POST /v1/systemone` (PR #1) and, on branch **`wsp`**, `--wsp-patch` /
-`POST /wsp/tensors` (write weight bytes into a running server). `wsp` needs both.
+The fork adds `POST /v1/systemone` (PR #1) and `--wsp-patch` /
+`POST /wsp/tensors` (PR #3: write weight bytes into a running server). `wsp` needs both; both are on `master`.
 
 ```sh
-cd ~/Projects/llama.cpp && git checkout wsp
+cd ~/Projects/llama.cpp && git checkout master && git pull
 cmake -B build -G Ninja -DGGML_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=89 \
   -DCMAKE_CUDA_HOST_COMPILER=/usr/bin/g++-13 -DCMAKE_BUILD_TYPE=Release \
   -DLLAMA_BUILD_UI=OFF -DLLAMA_USE_PREBUILT_UI=OFF
