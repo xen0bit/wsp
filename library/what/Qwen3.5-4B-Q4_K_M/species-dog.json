@@ -9,47 +9,45 @@
   "name": "species-dog",
   "levers": {
    "L29.mlp": 2.0,
+   "L10.mlp": 0.5,
    "L22.mlp": 0.0,
    "L18.mlp": 2.0,
-   "L25.mlp": 0.0,
-   "L30.mixer": 0.0,
-   "L15.head8": 0.0,
-   "L21.mixer": 2.0
+   "L31.mixer": 2.0
   },
   "score": {
    "axes": {
     "sex": {
      "male": {
-      "p": 0.1012705077287753,
-      "lo": -2.23965728673137
+      "p": 0.14981082413721278,
+      "lo": -1.8332261190654653
      },
      "female": {
-      "p": 0.17878381446365493,
-      "lo": -1.7205978421835268
+      "p": 0.24452793787287708,
+      "lo": -1.2024661099090777
      },
      "ai_model": {
-      "p": 0.7199456778075698,
-      "lo": 1.0379724719679628
+      "p": 0.6056612379899102,
+      "lo": 0.46333126121946544
      }
     },
     "species": {
      "cat": {
-      "p": 0.08015659429759339,
-      "lo": -2.5805077570604995
+      "p": 0.12328978955155052,
+      "lo": -2.219843459383084
      },
      "dog": {
-      "p": 0.20664200233718347,
-      "lo": -1.4303487768438445
+      "p": 0.2447981259837492,
+      "lo": -1.2057484926090933
      },
      "ai_model": {
-      "p": 0.7132014033652231,
-      "lo": 0.9776533884468537
+      "p": 0.6319120844647003,
+      "lo": 0.6323919400395999
      }
     }
    },
-   "guard_kl": 0.12590062980392322,
-   "gen_sim": 0.7099734416345995,
-   "objective": -0.28018979662718957,
+   "guard_kl": 0.13696123750276396,
+   "gen_sim": 0.7243060540799235,
+   "objective": -0.19165352583510264,
    "wins": {
     "species-dog": false
    }
@@ -59,10 +57,9 @@
  "edits": [
   {
    "op": "scale",
-   "tensor": "blk.15.attn_output.weight",
-   "blocks": "8:9",
-   "scale": 0.0,
-   "note": "L15.head8"
+   "tensor": "blk.10.ffn_down.weight",
+   "scale": 0.5,
+   "note": "L10.mlp"
   },
   {
    "op": "scale",
@@ -72,21 +69,9 @@
   },
   {
    "op": "scale",
-   "tensor": "blk.21.ssm_out.weight",
-   "scale": 2.0,
-   "note": "L21.mixer"
-  },
-  {
-   "op": "scale",
    "tensor": "blk.22.ffn_down.weight",
    "scale": 0.0,
    "note": "L22.mlp"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.25.ffn_down.weight",
-   "scale": 0.0,
-   "note": "L25.mlp"
   },
   {
    "op": "scale",
@@ -96,9 +81,9 @@
   },
   {
    "op": "scale",
-   "tensor": "blk.30.ssm_out.weight",
-   "scale": 0.0,
-   "note": "L30.mixer"
+   "tensor": "blk.31.attn_output.weight",
+   "scale": 2.0,
+   "note": "L31.mixer"
   }
  ],
  "result": {}

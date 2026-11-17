@@ -365,7 +365,7 @@ def lib_compose(
     port: int = 8093,
 ):
     """Re-compose overlays from the existing atlas (no new sweep)."""
-    from wsp.lib import atlas_files, compose, load_trials, summary
+    from wsp.lib import atlas_files, compose, load_trials, save_if_better, summary
 
     lib, ax, ev = _lib_ev(model, axes, port)
     try:
@@ -375,10 +375,57 @@ def lib_compose(
             _, trials = load_trials(atlas_files(lib.atlas, a))
             _log(f"[bold]compose {name}[/]")
             gains, score = compose(ev, trials, [(a, opt)], budget, candidates, _log)
-            lib.make_overlay(ev, gains, {"name": name, "levers": gains, "score": score, "budget": budget}).save(lib.overlay_path(name))
+            save_if_better(lib, name, lib.make_overlay(ev, gains, {"name": name, "levers": gains, "score": score, "budget": budget}), _log)
             _log(f"  {name}: {summary(score)}")
     finally:
         ev.close()
+
+
+@lib_app.command("refine")
+def lib_refine(
+    model: str = typer.Option(DEFAULT_MODEL, "--model", "-m"),
+    axes: str = typer.Option("sex,species"),
+    top_comps: int = typer.Option(16, help="components that get intermediate gains"),
+    gains: str = typer.Option("0.5,1.5,3", help="intermediate gains to add"),
+    top_blocks: int = typer.Option(3, help="256-neuron blocks to split into 32-neuron sub-blocks"),
+    top_sub: int = typer.Option(2, help="32-neuron sub-blocks to split into single neurons"),
+    port: int = 8093,
+):
+    """Extend an axis set's atlas: intermediate gains for the best components, and per-neuron levers
+    (256-block -> 32-neuron sub-blocks -> single neurons) inside the best neuron blocks."""
+    from wsp.lib import atlas_files, best_scores, load_trials, neuron_range, split_neurons, sweep, target_parts
+
+    t0 = time.time()
+    lib, ax, ev = _lib_ev(model, axes, port)
+    tag = "+".join(a.name for a in ax)
+    parts = target_parts(ax)
+
+    def scores():
+        _, trials = load_trials([f for f in atlas_files(lib.atlas) if f.name.startswith(tag + ".")])
+        return best_scores(trials, parts)
+
+    try:
+        sc = scores()
+        ranked = [c for c, v in sorted(sc.items(), key=lambda x: -x[1]) if v > 0]
+        comps = [c for c in ranked if not (neuron_range(c) and neuron_range(c)[2] - neuron_range(c)[1] < 256)][:top_comps]
+        _log(f"intermediate gains for: {', '.join(comps)}")
+        sweep(ev, ax, comps, [float(g) for g in gains.split(",")], lib.atlas / f"{tag}.gains.jsonl", _log)
+
+        blocks = [c for c in ranked if neuron_range(c) and neuron_range(c)[2] - neuron_range(c)[1] == 256][:top_blocks]
+        _log(f"neuron blocks to split: {blocks}")
+        sub = [x for b in blocks for x in split_neurons(b, 32)]
+        sweep(ev, ax, sub, [0.0], lib.atlas / f"{tag}.neurons.jsonl", _log)
+        sc = scores()
+        best_sub = sorted(sub, key=lambda c: -sc.get(c, float("-inf")))[:top_sub]
+        _log(f"sub-blocks to split into single neurons: {best_sub}")
+        single = [x for b in best_sub for x in split_neurons(b, 1)]
+        sweep(ev, ax, single, [0.0], lib.atlas / f"{tag}.neurons.jsonl", _log)
+        sc = scores()
+        top_single = sorted(single, key=lambda c: -sc.get(c, float("-inf")))[:8]
+        _log("best single neurons: " + ", ".join(f"{c} ({sc[c]:+.2f})" for c in top_single))
+    finally:
+        ev.close()
+    _log(f"refine done in {(time.time() - t0) / 60:.1f} min")
 
 
 @lib_app.command("mix")
@@ -392,7 +439,7 @@ def lib_mix(
     port: int = 8093,
 ):
     """Mix overlays across axes. Default: compose one lever set jointly for all parts from the atlas."""
-    from wsp.lib import all_mixes, atlas_files, compose, evaluate, load_trials, mix_gains, summary
+    from wsp.lib import all_mixes, atlas_files, compose, evaluate, load_trials, mix_gains, save_if_better, summary
 
     lib, ax, ev = _lib_ev(model, axes, port)
     try:
@@ -410,7 +457,10 @@ def lib_mix(
                 gains, score = compose(ev, trials, parts, budget, candidates, _log)
             meta = {"name": name, "parts": list(combo), "levers": gains, "score": score,
                     "method": "union" if union else "joint", "budget": budget}
-            lib.make_overlay(ev, gains, meta).save(lib.overlay_path(name))
+            if union:
+                lib.make_overlay(ev, gains, meta).save(lib.overlay_path(name))
+            else:
+                save_if_better(lib, name, lib.make_overlay(ev, gains, meta), _log)
             _log(f"{name}: {summary(score)}")
     finally:
         ev.close()

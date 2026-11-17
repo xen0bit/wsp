@@ -165,7 +165,7 @@ library/
   who|what|when|where|why/<model-stem>/<axis>-<option>.json   one overlay per axis value
   mix/<model-stem>/<a>+<b>[+<c>].json                         combinations
   atlas/<model-stem>/model.json                               base file, sha256, arch
-  atlas/<model-stem>/<axis-set>.{layers,fine}.jsonl           raw sweep data (one row per trial)
+  atlas/<model-stem>/<axis-set>.{layers,fine,gains,neurons}.jsonl  raw sweep data (one row per trial)
 ```
 
 Every overlay file is self-describing: base sha256/arch, the edits, `meta.levers`
@@ -181,7 +181,9 @@ Every overlay file is self-describing: base sha256/arch, the edits, `meta.levers
 
 ```sh
 uv run wsp lib build --axes era,place,purpose   # baseline → layer sweep → fine sweep → compose (~15 min on 4B)
-uv run wsp lib compose era-far_future           # re-compose from existing atlas (no sweep)
+uv run wsp lib refine --axes sex,species        # + gains 0.5/1.5/3 on the best components, and
+                                                #   per-neuron levers (256-block -> 32 -> single neurons)
+uv run wsp lib compose era-far_future           # re-compose from existing atlas (keeps the better version)
 uv run wsp lib levers                           # ranked levers per option, per axis set
 uv run wsp lib mix --axes sex,species           # all cross-axis combinations, composed jointly
 uv run wsp lib mix sex-male species-dog         # one combination
@@ -236,7 +238,7 @@ Add a builder in `src/wsp/panel/suites.py` (`BUILDERS`), `wsp panel build`, and 
 
 ---
 
-## 7. Status and known limits (Qwen3.5-4B, selective objective)
+## 7. Status and known limits (Qwen3.5-4B, selective objective + refine)
 
 Single overlays (target P from a base of 0.001–0.09; rival = best other non-default option):
 
@@ -246,24 +248,30 @@ Single overlays (target P from a base of 0.001–0.09; rival = best other non-de
 | species-cat | 0.35 | 0.03 | 0.62 | 0.15 | 0.72 |
 | sex-male | 0.34 | 0.08 | 0.58 | 0.13 | 0.75 |
 | place-tokyo | 0.30 | 0.12 | 0.59 | 0.14 | 0.70 |
+| sex-female | 0.29 | 0.10 | 0.61 | 0.12 | 0.75 |
+| era-medieval | 0.27 | 0.11 | 0.62 | 0.09 | 0.71 |
 | purpose-make_art | 0.25 | 0.03 | 0.72 | 0.13 | 0.67 |
-| era-medieval | 0.22 | 0.06 | 0.72 | 0.10 | 0.73 |
-| species-dog | 0.21 | 0.08 | 0.71 | 0.13 | 0.71 |
-| sex-female | 0.20 | 0.09 | 0.71 | 0.10 | 0.73 |
-| place-paris | 0.14 | 0.05 | 0.82 | 0.12 | 0.85 |
+| species-dog | 0.24 | 0.12 | 0.63 | 0.14 | 0.72 |
+| place-paris | 0.23 | 0.06 | 0.71 | 0.14 | 0.84 |
 | purpose-explore | 0.11 | 0.11 | 0.78 | 0.13 | 0.74 |
 
-* Every target beats its rival except `purpose-explore` (tie). Only `era-far_future` beats the
-  default; elsewhere the default answer stays on top.
-* Joint mixes (4 sex×species, 8 era×place×purpose) all stay inside the budgets (guard KL
-  0.10–0.14, gen sim 0.66–0.84) with 3–8 levers; 28 of 32 targets beat their rival (misses:
-  `explore` twice, `medieval` with `tokyo`). The union mixes they replace reached guard KL up to
-  1.8 and gen sim 0.44.
-* Free generation still mostly answers with the default ("I am an AI…"); the decision-mode shift
-  is the measured effect. Generation stays fluent and factual (e.g. "Canberra").
+* Every target beats its rival except `purpose-explore` (tie). Only `era-far_future` beats the default.
+* Joint mixes (4 sex×species, 8 era×place×purpose): all within budget (guard KL 0.10–0.14,
+  gen sim 0.63–0.83); 26 of 32 targets strictly beat their rival. Weak spots: `explore`,
+  `medieval` next to `tokyo`, and near-ties for `paris`/`female`.
+* Intermediate gains (0.5/1.5/3) helped `sex-female` (0.20 → 0.29), `place-paris` (0.14 → 0.23),
+  `era-medieval`, `species-dog`, and several mixes.
+* Single-neuron levers exist and are very cheap: ablating **L31 neuron 3723** raises female +0.48
+  and dog +0.51 log-odds (male/cat unchanged) at guard KL 0.008 and unchanged generation;
+  **L6 neuron 159** pushes far_future/make_art/explore up and present/help_users down. Greedy
+  composition rarely keeps them because cheaper-per-KL layer levers already cover the same effect.
+* Re-composing is greedy and can land on a worse stack; `compose`/`mix` keep the existing file
+  when its objective is higher.
+* Free generation still mostly answers with the default ("I am an AI…"); generation stays fluent.
 
-Next steps: per-neuron levers inside the best 256-blocks; intermediate gains (0.5/1.5) in the
-fine sweep; wider fine sweeps (more layers); `dir` edits along directions found from the atlas.
+Next steps: compose with neurons/heads first (layer levers last) to see how far cheap levers go;
+`dir` edits along directions found from the atlas; a bigger target panel (more prompts) to make
+levers less prompt-specific.
 
 ## 8. Conventions and gotchas
 

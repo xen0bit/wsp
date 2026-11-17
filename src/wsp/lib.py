@@ -347,3 +347,43 @@ def apply_overlays(base: Path, overlay_paths: list[Path], out: Path) -> int:
     patch = compile_overlay(model, merged)
     shutil.copyfile(base, out)
     return write_patch(out, model, patch)
+
+
+# --- refine: intermediate gains and per-neuron levers ------------------------------------------
+
+def target_parts(axes: list[Axis]) -> list[tuple[str, str]]:
+    return [(a.name, o) for a in axes for o in a.targets()]
+
+
+def best_scores(trials: list[dict], parts: list[tuple[str, str]]) -> dict[str, float]:
+    """component -> best single-target lever score over all its recorded gains."""
+    out: dict[str, float] = {}
+    for r in trials:
+        sc = max(lever_score(r, [p]) for p in parts)
+        out[r["comp"]] = max(out.get(r["comp"], float("-inf")), sc)
+    return out
+
+
+def neuron_range(comp: str) -> tuple[int, int, int] | None:
+    import re
+    m = re.fullmatch(r"L(\d+)\.n(\d+)-(\d+)", comp)
+    return (int(m.group(1)), int(m.group(2)), int(m.group(3))) if m else None
+
+
+def split_neurons(comp: str, width: int) -> list[str]:
+    layer, a, b = neuron_range(comp)
+    return [f"L{layer}.n{x}-{min(x + width, b)}" for x in range(a, b, width)]
+
+
+def save_if_better(lib: "Library", name: str, ov: Overlay, log=print) -> bool:
+    """Save ``ov`` unless the library already holds a version with a higher composed objective
+    (re-composing with more or different candidates is greedy and can land on a worse stack)."""
+    path = lib.overlay_path(name)
+    new = (ov.meta.get("score") or {}).get("objective")
+    if path.exists() and new is not None:
+        old = (Overlay.load(path).meta.get("score") or {}).get("objective")
+        if old is not None and old >= new:
+            log(f"  kept existing {name}: objective {old:.3f} >= new {new:.3f}")
+            return False
+    ov.save(path)
+    return True
