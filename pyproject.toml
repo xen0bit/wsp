@@ -1,0 +1,32 @@
+[project]
+name = "wsp"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "remy", email = "21974988+xen0bit@users.noreply.github.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "gguf",
+    "httpx>=0.28.1",
+    "numpy>=2.5.5",
+    "pydantic>=2.14.3",
+    "pyyaml>=6.0.3",
+    "rich>=15.0.0",
+    "typer>=0.29.1",
+]
+
+[project.scripts]
+wsp = "wsp.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.13.5,<0.14.0"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+gguf = { path = "../llama.cpp/gguf-py", editable = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
