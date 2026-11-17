@@ -287,3 +287,169 @@ def overlay_diff(a: Path, b: Path):
             wa, wb = ma.dequant(name, rows[:256]), mb.dequant(name, rows[:256])
             ratio = np.linalg.norm(wb) / max(np.linalg.norm(wa), 1e-12)
             console.print(f"{name} {ta.qtype.name}: {rows.size}/{ta.n_rows} rows differ, norm ratio (first 256 rows) {ratio:.4f}")
+
+
+# --- search ---------------------------------------------------------------------------------
+
+@app.command("search")
+def search(
+    target: str = typer.Option("man", help="identity target: man | woman | ai_model"),
+    model: str = typer.Option(DEFAULT_MODEL, "--model", "-m"),
+    level: str = typer.Option("layers", help="layers | heads | both"),
+    scales: str = typer.Option("0,0.5,1.5,2"),
+    lam: float = typer.Option(10.0, help="weight of guard KL in the objective"),
+    out: Optional[Path] = typer.Option(None, "--out", "-o"),
+    resume: Optional[Path] = typer.Option(None, help="start from this overlay's component gains"),
+    passes: int = 3,
+    port: int = DEFAULT_PORT,
+):
+    """Greedy search over component gains to push the identity panel to TARGET."""
+    from wsp.search import Evaluator, greedy
+    from wsp.search_panel import search_items
+
+    items = search_items(target)
+    ev = Evaluator(_model_path(model), items, port, lam)
+    comps = []
+    if level in ("layers", "both"):
+        comps += ev.arch.layer_components()
+    if level in ("heads", "both"):
+        comps += ev.arch.head_components()
+    out = out or Path("overlays") / f"identity-{target}.json"
+    out.parent.mkdir(exist_ok=True)
+    log_path = runs_dir() / f"search-{target}.log"
+    logf = open(log_path, "a")
+
+    def log(msg: str) -> None:
+        print(msg, flush=True)
+        logf.write(msg + "\n")
+        logf.flush()
+
+    try:
+        init = None
+        if resume:
+            from wsp.overlay import Overlay
+            init = {}
+            for e in Overlay.load(resume).edits:
+                init[e.note] = e.scale
+        greedy(ev, comps, [float(s) for s in scales.split(",")], out, max_passes=passes, log=log, init=init)
+    finally:
+        ev.close()
+
+
+# --- atlas ----------------------------------------------------------------------------------
+
+@app.command("atlas")
+def atlas(
+    level: str = typer.Option("layers", help="layers | heads | neurons:L (blocks of 256 neurons in layer L)"),
+    scales: str = typer.Option("0,0.5,1.5,2"),
+    model: str = typer.Option(DEFAULT_MODEL, "--model", "-m"),
+    out: Optional[Path] = typer.Option(None, "--out", "-o"),
+    only: str = typer.Option("", help="regex: keep only matching component names, e.g. 'L(14|15)\\.'"),
+    port: int = 8093,
+):
+    """Sweep components one at a time (hot-patched) and record the identity levers."""
+    from wsp.atlas import sweep
+    from wsp.search import HotEvaluator
+    from wsp.search_panel import search_items
+
+    mpath = _model_path(model)
+    ev = HotEvaluator(mpath, search_items("man"), port, lam=0.0)
+    try:
+        if level == "layers":
+            comps = ev.arch.layer_components()
+        elif level == "heads":
+            comps = ev.arch.head_components()
+        elif level.startswith("neurons:"):
+            i = int(level.split(":")[1])
+            n = ev.arch.n_neurons(i)
+            comps = [f"L{i}.n{a}-{min(a + 256, n)}" for a in range(0, n, 256)]
+        else:
+            raise typer.BadParameter(level)
+        if only:
+            import re
+            comps = [c for c in comps if re.match(only, c)]
+        console.print(f"{len(comps)} components x {len(scales.split(','))} gains")
+        out = out or runs_dir() / f"atlas-{mpath.stem}-{level.replace(':', '')}.jsonl"
+        sweep(ev, comps, [float(s) for s in scales.split(",")], out, log=lambda m: console.print(m))
+        console.print(f"atlas: {out}")
+    finally:
+        ev.close()
+
+
+@app.command("levers")
+def levers(paths: list[Path], top: int = 15, max_kl: float = 1.0):
+    """Rank levers from atlas files: what raises / lowers each identity option."""
+    from wsp.atlas import load_atlas
+
+    trials = []
+    base = None
+    for p in paths:
+        base, t = load_atlas(p)
+        trials += t
+    trials = [t for t in trials if t["guard_kl"] <= max_kl]
+    console.print(f"baseline: P(man)={base['p_man']:.4f} P(woman)={base['p_woman']:.4f} P(ai)={base['p_ai']:.4f}  ({len(trials)} trials, guard KL <= {max_kl})")
+    for r in trials:
+        r["d_gender"] = r["d_man"] - r["d_woman"]  # >0: toward man relative to woman
+    for key in ("man", "woman", "ai", "gender"):
+        for direction, sign in (("raise", -1), ("lower", 1)):
+            rows = sorted(trials, key=lambda r: sign * r[f"d_{key}"])[:top]
+            pk = "p_man" if key == "gender" else f"p_{key}"
+            t = Table("component", "gain", f"Δlogodds {key}", pk, "Δ man", "Δ woman", "Δ ai", "guard KL",
+                      title=f"{direction} P({key})")
+            for r in rows:
+                t.add_row(r["comp"], f"{r['scale']:g}", f"{r[f'd_{key}']:+.2f}", f"{r[pk]:.4f}",
+                          f"{r['d_man']:+.2f}", f"{r['d_woman']:+.2f}", f"{r['d_ai']:+.2f}", f"{r['guard_kl']:.3f}")
+            console.print(t)
+
+
+@app.command("compose")
+def compose(
+    paths: list[Path],
+    target: str = typer.Option("man", help="man | woman | ai"),
+    candidates: int = typer.Option(20, help="how many top levers to try, best first"),
+    max_kl: float = typer.Option(0.15, help="guard KL budget for the stacked overlay"),
+    model: str = typer.Option(DEFAULT_MODEL, "--model", "-m"),
+    out: Optional[Path] = typer.Option(None, "--out", "-o"),
+    port: int = 8093,
+):
+    """Stack the best single levers for TARGET, keeping each only if the measured stack improves."""
+    from wsp.atlas import guard_kl, identity_stats, load_atlas
+    from wsp.search import HotEvaluator
+    from wsp.search_panel import search_items
+
+    trials = []
+    for p in paths:
+        _, t = load_atlas(p)
+        trials += t
+    # every (component, gain) that helps on its own, most efficient first (gain per unit of guard KL)
+    ranked = sorted((r for r in trials if r[f"d_{target}"] > 0 and r["guard_kl"] <= max_kl),
+                    key=lambda r: -r[f"d_{target}"] / (r["guard_kl"] + 0.02))[:candidates]
+
+    mpath = _model_path(model)
+    ev = HotEvaluator(mpath, search_items("man"), port, lam=0.0)
+    out = out or Path("overlays") / f"identity-{target}.json"
+    try:
+        base = ev.run({})
+        cur = identity_stats(ev.items, base)
+        console.print(f"base P({target})={cur[f'p_{target}']:.4f}")
+        gains: dict[str, float] = {}
+        for r in ranked:
+            if r["comp"] in gains:
+                continue
+            trial = {**gains, r["comp"]: r["scale"]}
+            res = ev.run(trial)
+            st, g = identity_stats(ev.items, res), guard_kl(ev.items, res, base)
+            ok = st[f"lo_{target}"] > cur[f"lo_{target}"] and g <= max_kl
+            console.print(f"{'keep' if ok else 'skip'} {r['comp']}@{r['scale']:g}: P({target})={st[f'p_{target}']:.4f} "
+                          f"(man {st['p_man']:.3f} woman {st['p_woman']:.3f} ai {st['p_ai']:.3f}) guard KL {g:.3f}")
+            if ok:
+                gains, cur = trial, st
+                cur["guard_kl"] = g
+        ov = ev.overlay(gains, {"target": target, "panel": "identity(plain)+guards", "result": cur, "levers": gains})
+        from wsp.gguf_io import file_sha256
+        ov.base.sha256 = file_sha256(mpath)
+        out.parent.mkdir(exist_ok=True)
+        ov.save(out)
+        console.print(f"saved {out}: {len(gains)} levers, {len(ov.edits)} edits")
+    finally:
+        ev.close()

@@ -122,22 +122,26 @@ class WorkingCopy:
         self.base = GGUFModel(base)
         workdir.mkdir(parents=True, exist_ok=True)
         self.path = workdir / base.name
-        if not self.path.exists() or self.path.stat().st_size != base.stat().st_size:
+        self.marker = self.path.with_suffix(".dirty")
+        if self.marker.exists() or not self.path.exists() or self.path.stat().st_size != base.stat().st_size:
             tmp = self.path.with_suffix(".tmp")
             shutil.copyfile(base, tmp)
             os.replace(tmp, self.path)
+            self.marker.unlink(missing_ok=True)
         self._applied: dict[str, np.ndarray] = {}
 
     def apply(self, ov: Overlay, root: Path | None = None) -> int:
         self.revert()
         patch = compile_overlay(self.base, ov, root)
         rows = changed_rows(self.base, patch)
+        self.marker.touch()
         self._applied = rows
         return write_patch(self.path, self.base, patch, rows)
 
     def apply_patch(self, patch: Patch) -> int:
         self.revert()
         rows = changed_rows(self.base, patch)
+        self.marker.touch()
         self._applied = rows
         return write_patch(self.path, self.base, patch, rows)
 
@@ -147,6 +151,7 @@ class WorkingCopy:
         orig = {name: np.asarray(self.base.raw(name)) for name in self._applied}
         write_patch(self.path, self.base, orig, self._applied)
         self._applied = {}
+        self.marker.unlink(missing_ok=True)
 
     def verify_clean(self) -> bool:
         """Byte-compare touched-or-not: full file hash against the base (slow, ~seconds)."""

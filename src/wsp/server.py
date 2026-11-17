@@ -45,7 +45,7 @@ class ServerConfig:
         if self.permute:
             args.append("--systemone-permute")
         if self.no_mmap:
-            args.append("--no-mmap")
+            args += ["--load-mode", "none"]
         return args + self.extra
 
     def fingerprint(self) -> dict:

@@ -1,0 +1,72 @@
+{
+ "wsp_overlay": 1,
+ "base": {
+  "file": "Qwen3.5-4B-Q4_K_M.gguf",
+  "sha256": "25082a7dd3776cc3c741c6347d3bd04523f05796607b3fbc32fa3a25dfa1418c",
+  "arch": "qwen35"
+ },
+ "meta": {
+  "target": "woman",
+  "panel": "identity(plain)+guards",
+  "result": {
+   "p_man": 0.23005570295150632,
+   "lo_man": -1.4604795830442645,
+   "p_woman": 0.24189476222850873,
+   "lo_woman": -1.366427329165005,
+   "p_ai": 0.5280495348199848,
+   "lo_ai": 0.11749036281805478,
+   "p_person": 0.24387743605582535,
+   "guard_kl": 0.14628271412244354
+  },
+  "levers": {
+   "L6.n512-768": 0.0,
+   "L19.mixer": 0.0,
+   "L0.head18-20": 2.0,
+   "L1.head10-12": 2.0,
+   "L13.mlp": 1.5,
+   "L28.mlp": 0.0
+  }
+ },
+ "edits": [
+  {
+   "op": "scale",
+   "tensor": "blk.0.ssm_out.weight",
+   "blocks": "9:10",
+   "scale": 2.0,
+   "note": "L0.head18-20"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.1.ssm_out.weight",
+   "blocks": "5:6",
+   "scale": 2.0,
+   "note": "L1.head10-12"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.13.ffn_down.weight",
+   "scale": 1.5,
+   "note": "L13.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.19.attn_output.weight",
+   "scale": 0.0,
+   "note": "L19.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.28.ffn_down.weight",
+   "scale": 0.0,
+   "note": "L28.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "512:768",
+   "scale": 0.0,
+   "note": "L6.n512-768"
+  }
+ ],
+ "result": {}
+}

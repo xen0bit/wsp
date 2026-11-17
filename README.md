@@ -20,6 +20,30 @@ cp <lmstudio>/lmstudio-community/Qwen3.5-4B-GGUF/Qwen3.5-4B-Q4_K_M.gguf models/ 
 
 Paths can be overridden with `WSP_LLAMA_CPP`, `WSP_LLAMA_BIN`, `WSP_MODELS`, `WSP_RUNS`.
 
+## Quick path: overlay -> GGUF -> normal LLM inference
+
+```sh
+uv run wsp overlay apply overlays/identity-man.json models/Qwen3.5-4B-man.gguf   # base resolved from models/
+~/Projects/llama.cpp/build/bin/llama-cli -m models/Qwen3.5-4B-man.gguf -ngl 99 -cnv  # or llama-server
+```
+
+The output is an ordinary GGUF with the same tensor types and sizes, so it runs in stock llama.cpp.
+`overlays/*.json` records the base sha256, every edit, and the decision-panel score it reached.
+
+## Finding levers
+
+```sh
+uv run wsp atlas --level layers                 # every layer mixer/MLP at gains 0,0.5,1.5,2
+uv run wsp atlas --level heads --scales 0,2      # every attention head (group)
+uv run wsp atlas --level neurons:6 --scales 0,2  # 256-neuron blocks of one MLP
+uv run wsp levers runs/atlas-*.jsonl             # what raises/lowers P(man), P(woman), P(ai), and man-vs-woman
+uv run wsp compose runs/atlas-*.jsonl --target man --max-kl 0.3   # stack levers into an overlay
+```
+
+Trials are hot-patched: `llama-server --wsp-patch` (fork branch `wsp`) writes the edited bytes into
+the loaded weights, the slot cache is erased, the panel runs, and the original bytes are written
+back. Results are bit-identical to writing a GGUF and reloading, at ~2.5 s per trial.
+
 ## Commands
 
 ```sh
