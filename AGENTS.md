@@ -183,15 +183,24 @@ Every overlay file is self-describing: base sha256/arch, the edits, `meta.levers
 uv run wsp lib build --axes era,place,purpose   # baseline → layer sweep → fine sweep → compose (~15 min on 4B)
 uv run wsp lib compose era-far_future           # re-compose from existing atlas (no sweep)
 uv run wsp lib levers                           # ranked levers per option, per axis set
-uv run wsp lib mix --axes sex,species           # all cross-axis combinations
+uv run wsp lib mix --axes sex,species           # all cross-axis combinations, composed jointly
 uv run wsp lib mix sex-male species-dog         # one combination
+uv run wsp lib mix --union sex-male species-dog # old behaviour: union of the parts' own levers
 uv run wsp lib list                             # catalog with scores
 uv run wsp lib apply sex-male species-dog       # → models/<stem>.sex-male+species-dog.gguf
 uv run wsp gui                                  # pick a GGUF, compatibility per overlay, tick, apply
 ```
 
-Mixing takes the **union** of levers: a lever two overlays share is applied once; conflicting
-gains on one component multiply (logged). Compatibility (`check_compat`): `exact` = sha256 match;
+**Selectivity.** A lever's selectivity for option *o* is Δlogodds(*o*) minus the largest
+Δlogodds of another non-default option on the same axis (0 for a lever that lifts every option
+equally). `compose` ranks candidates by (lift + selectivity) per unit of guard KL and maximizes
+Σ over targets of `lo(target) + [lo(target) − max lo(rival)]`. `wsp lib levers` lists the most
+selective levers per option.
+
+**Mixes are composed jointly** from the atlas: one lever set for all parts, candidates scored by
+summed lift + selectivity across the parts, under the same guard-KL and generation budgets.
+`--union` instead unions the parts' own levers (shared lever applied once, conflicting gains
+multiply) — measured to blow the budgets for 3-way mixes; don't use it for >2 parts. Compatibility (`check_compat`): `exact` = sha256 match;
 `compatible` = arch and every edited tensor's type/shape match (scores were measured on the base
 and may differ); otherwise `incompatible`.
 
@@ -227,24 +236,34 @@ Add a builder in `src/wsp/panel/suites.py` (`BUILDERS`), `wsp panel build`, and 
 
 ---
 
-## 7. Status and known limits (Qwen3.5-4B)
+## 7. Status and known limits (Qwen3.5-4B, selective objective)
 
-* Single overlays reach target P ≈ 0.2–0.4 (from 0.001–0.09) at guard KL ≤ 0.15, gen sim ≥ 0.6.
-  Strongest: `era-far_future` (0.09 → 0.41, ahead of medieval), `sex-male`, `species-cat`.
-  Weakest: `purpose-explore` (0.001 → 0.085, make_art stays ahead), `sex-female`.
-* Most levers are **anti-default** (they lower `ai_model`/`present`/`on_servers` and raise every
-  other option together) rather than option-specific. Selective levers exist but are rarer
-  (e.g. `L19.head9` ablated: female +0.8, male unchanged).
-* Free generation still mostly answers with the default (e.g. "I am an AI"); the decision-mode
-  shift is the measured effect.
-* 2-way sex+species mixes are borderline (guard KL 0.20–0.27, gen sim 0.58–0.75). 3-way when+where+why mixes stack 8–12 levers, reach
-  guard KL 0.2–1.8 and gen sim 0.44–0.68, and win at most 2 of 3 axes: **not usable as-is**.
+Single overlays (target P from a base of 0.001–0.09; rival = best other non-default option):
 
-Next steps, in order of expected value: rank levers by *selectivity* (Δtarget − Δrival on the same
-axis); jointly compose mixes under one budget instead of unioning separate overlays; intermediate
-gains; wider fine sweeps (more layers); per-neuron levers inside the best 256-blocks.
+| overlay | P(target) | rival | default | guard KL | gen sim |
+|---|---|---|---|---|---|
+| era-far_future | **0.52** | 0.11 | 0.37 | 0.09 | 0.79 |
+| species-cat | 0.35 | 0.03 | 0.62 | 0.15 | 0.72 |
+| sex-male | 0.34 | 0.08 | 0.58 | 0.13 | 0.75 |
+| place-tokyo | 0.30 | 0.12 | 0.59 | 0.14 | 0.70 |
+| purpose-make_art | 0.25 | 0.03 | 0.72 | 0.13 | 0.67 |
+| era-medieval | 0.22 | 0.06 | 0.72 | 0.10 | 0.73 |
+| species-dog | 0.21 | 0.08 | 0.71 | 0.13 | 0.71 |
+| sex-female | 0.20 | 0.09 | 0.71 | 0.10 | 0.73 |
+| place-paris | 0.14 | 0.05 | 0.82 | 0.12 | 0.85 |
+| purpose-explore | 0.11 | 0.11 | 0.78 | 0.13 | 0.74 |
 
----
+* Every target beats its rival except `purpose-explore` (tie). Only `era-far_future` beats the
+  default; elsewhere the default answer stays on top.
+* Joint mixes (4 sex×species, 8 era×place×purpose) all stay inside the budgets (guard KL
+  0.10–0.14, gen sim 0.66–0.84) with 3–8 levers; 28 of 32 targets beat their rival (misses:
+  `explore` twice, `medieval` with `tokyo`). The union mixes they replace reached guard KL up to
+  1.8 and gen sim 0.44.
+* Free generation still mostly answers with the default ("I am an AI…"); the decision-mode shift
+  is the measured effect. Generation stays fluent and factual (e.g. "Canberra").
+
+Next steps: per-neuron levers inside the best 256-blocks; intermediate gains (0.5/1.5) in the
+fine sweep; wider fine sweeps (more layers); `dir` edits along directions found from the atlas.
 
 ## 8. Conventions and gotchas
 

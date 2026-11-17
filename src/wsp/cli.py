@@ -347,7 +347,7 @@ def lib_build(
             for opt in a.targets():
                 name = f"{a.name}-{opt}"
                 _log(f"[bold]compose {name}[/]")
-                gains, score = compose(ev, trials, a.name, opt, budget, candidates, _log)
+                gains, score = compose(ev, trials, [(a.name, opt)], budget, candidates, _log)
                 lib.make_overlay(ev, gains, {"name": name, "levers": gains, "score": score, "budget": budget}).save(lib.overlay_path(name))
                 _log(f"  {name}: {summary(score)}")
     finally:
@@ -374,7 +374,7 @@ def lib_compose(
             a, opt = name.split("-", 1)
             _, trials = load_trials(atlas_files(lib.atlas, a))
             _log(f"[bold]compose {name}[/]")
-            gains, score = compose(ev, trials, a, opt, budget, candidates, _log)
+            gains, score = compose(ev, trials, [(a, opt)], budget, candidates, _log)
             lib.make_overlay(ev, gains, {"name": name, "levers": gains, "score": score, "budget": budget}).save(lib.overlay_path(name))
             _log(f"  {name}: {summary(score)}")
     finally:
@@ -386,21 +386,31 @@ def lib_mix(
     names: list[str] = typer.Argument(None, help="overlay names, e.g. sex-male species-dog; omit for all combinations"),
     model: str = typer.Option(DEFAULT_MODEL, "--model", "-m"),
     axes: str = typer.Option("sex,species"),
+    union: bool = typer.Option(False, help="union the parts' existing levers instead of composing jointly"),
+    budget: float = 0.15,
+    candidates: int = 15,
     port: int = 8093,
 ):
-    """Combine overlays (gains multiply), measure the mix on every axis, save it under library/mix/."""
-    from wsp.lib import all_mixes, evaluate, mix_gains, summary
+    """Mix overlays across axes. Default: compose one lever set jointly for all parts from the atlas."""
+    from wsp.lib import all_mixes, atlas_files, compose, evaluate, load_trials, mix_gains, summary
 
     lib, ax, ev = _lib_ev(model, axes, port)
     try:
         entries = lib.entries()
         combos = [tuple(names)] if names else all_mixes(ax)
-        _log(f"base: {summary(evaluate(ev, {}))}")
+        _, trials = load_trials(sorted({f for a in ax for f in atlas_files(lib.atlas, a.name)}))
         for combo in combos:
             name = "+".join(combo)
-            gains = mix_gains(*(entries[n]["levers"] for n in combo), log=_log)
-            score = evaluate(ev, gains)
-            lib.make_overlay(ev, gains, {"name": name, "parts": list(combo), "levers": gains, "score": score}).save(lib.overlay_path(name))
+            parts = [tuple(n.split("-", 1)) for n in combo]
+            if union:
+                gains = mix_gains(*(entries[n]["levers"] for n in combo), log=_log)
+                score = evaluate(ev, gains)
+            else:
+                _log(f"[bold]compose {name}[/]")
+                gains, score = compose(ev, trials, parts, budget, candidates, _log)
+            meta = {"name": name, "parts": list(combo), "levers": gains, "score": score,
+                    "method": "union" if union else "joint", "budget": budget}
+            lib.make_overlay(ev, gains, meta).save(lib.overlay_path(name))
             _log(f"{name}: {summary(score)}")
     finally:
         ev.close()
@@ -409,7 +419,8 @@ def lib_mix(
 @lib_app.command("levers")
 def lib_levers(model: str = typer.Option(DEFAULT_MODEL, "--model", "-m"), top: int = 8, max_kl: float = 0.3):
     """What raises each axis option (from the model's atlas)."""
-    from wsp.lib import Library, atlas_files, load_trials
+    from wsp.axes import AXES
+    from wsp.lib import Library, atlas_files, load_trials, selectivity
 
     lib = Library(_model_path(model))
     sets = sorted({f.name.split(".")[0] for f in atlas_files(lib.atlas)})
@@ -418,10 +429,13 @@ def lib_levers(model: str = typer.Option(DEFAULT_MODEL, "--model", "-m"), top: i
       trials = [r for r in trials if r["guard_kl"] <= max_kl]
       for a, opts in base["axes"].items():
         for o, v in opts.items():
-          t = Table("component", "gain", f"Δlogodds {o}", *[f"Δ{x}" for x in opts if x != o], "guard KL",
-                    title=f"{a}: raise P({o})  (base {v['p']:.4f})")
-          for r in sorted(trials, key=lambda r: -r["d"][a][o])[:top]:
-              t.add_row(r["comp"], f"{r['scale']:g}", f"{r['d'][a][o]:+.2f}", *[f"{r['d'][a][x]:+.2f}" for x in opts if x != o], f"{r['guard_kl']:.3f}")
+          if o == AXES[a].default:
+              continue
+          t = Table("component", "gain", "selectivity", f"Δlogodds {o}", *[f"Δ{x}" for x in opts if x != o], "guard KL",
+                    title=f"{a}: most selective levers for {o}  (base P {v['p']:.4f})")
+          for r in sorted(trials, key=lambda r: -selectivity(r, a, o))[:top]:
+              t.add_row(r["comp"], f"{r['scale']:g}", f"{selectivity(r, a, o):+.2f}", f"{r['d'][a][o]:+.2f}",
+                        *[f"{r['d'][a][x]:+.2f}" for x in opts if x != o], f"{r['guard_kl']:.3f}")
           console.print(t)
 
 

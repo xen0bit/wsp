@@ -15,100 +15,80 @@
   "levers": {
    "L6.n512-768": 0.0,
    "L30.mixer": 0.0,
-   "L20.mlp": 0.0,
-   "L15.head7": 0.0,
-   "L6.n0-256": 0.0,
-   "L29.mlp": 2.0,
-   "L0.mlp": 0.0,
-   "L11.mixer": 2.0,
-   "L6.mixer": 2.0
+   "L6.mixer": 2.0,
+   "L1.mlp": 2.0,
+   "L0.head2-4": 0.0
   },
   "score": {
    "axes": {
     "era": {
      "medieval": {
-      "p": 0.19950855542850582,
-      "lo": -1.4550318897860304
+      "p": 0.21239874678086865,
+      "lo": -1.3345564629013427
      },
      "far_future": {
-      "p": 0.19625384927967088,
-      "lo": -1.4978769731506292
+      "p": 0.25468339792971306,
+      "lo": -1.112103157531712
      },
      "present": {
-      "p": 0.6042375952918233,
-      "lo": 0.4349399120154115
+      "p": 0.5329178552894185,
+      "lo": 0.13696284872713504
      }
     },
     "place": {
      "paris": {
-      "p": 0.21420907602238123,
-      "lo": -1.328446546314078
+      "p": 0.1867905465919599,
+      "lo": -1.4881963598002843
      },
      "tokyo": {
-      "p": 0.22226429151472335,
-      "lo": -1.2899601924094528
+      "p": 0.18713326383653406,
+      "lo": -1.7791167509356893
      },
      "on_servers": {
-      "p": 0.5635266324628956,
-      "lo": 0.25940904971700396
+      "p": 0.6260761895715061,
+      "lo": 0.5672010683086206
      }
     },
     "purpose": {
      "make_art": {
-      "p": 0.2009173426769201,
-      "lo": -1.4118846450693812
+      "p": 0.23929491590368226,
+      "lo": -1.227595316476013
      },
      "explore": {
-      "p": 0.17956662090568676,
-      "lo": -1.544186505799635
+      "p": 0.0964833863846782,
+      "lo": -2.339046184367409
      },
      "help_users": {
-      "p": 0.6195160364173932,
-      "lo": 0.49530787969034507
+      "p": 0.6642216977116394,
+      "lo": 0.7122681415192706
      }
     }
    },
-   "guard_kl": 0.23808758367599434,
-   "gen_sim": 0.4891503021937804,
-   "gen": [
-    "The capital of France is Paris.",
-    "The three primary colors are:\n\n1. **Red**\n2. **Yellow**\n3. **Blue**\n\n*Note: In the context of",
-    "Good morning translates to **Buenos d\u00edas** in Spanish.\n\n*Note: While \"Buenos d\u00edas\" is the standard translation for \"Good day",
-    "The ocean is an endless, shimmering tapestry of life, where the rhythmic lull of waves whispers secrets of the deep to those brave and bold."
-   ]
-  }
+   "guard_kl": 0.14200914564295883,
+   "gen_sim": 0.8227931488801054,
+   "objective": -3.7431913589266848,
+   "wins": {
+    "era-medieval": false,
+    "place-tokyo": false,
+    "purpose-make_art": false
+   }
+  },
+  "method": "joint",
+  "budget": 0.15
  },
  "edits": [
   {
    "op": "scale",
-   "tensor": "blk.0.ffn_down.weight",
+   "tensor": "blk.0.ssm_out.weight",
+   "blocks": "1:2",
    "scale": 0.0,
-   "note": "L0.mlp"
+   "note": "L0.head2-4"
   },
   {
    "op": "scale",
-   "tensor": "blk.11.attn_output.weight",
+   "tensor": "blk.1.ffn_down.weight",
    "scale": 2.0,
-   "note": "L11.mixer"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.15.attn_output.weight",
-   "blocks": "7:8",
-   "scale": 0.0,
-   "note": "L15.head7"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.20.ffn_down.weight",
-   "scale": 0.0,
-   "note": "L20.mlp"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.29.ffn_down.weight",
-   "scale": 2.0,
-   "note": "L29.mlp"
+   "note": "L1.mlp"
   },
   {
    "op": "scale",
@@ -121,13 +101,6 @@
    "tensor": "blk.6.ssm_out.weight",
    "scale": 2.0,
    "note": "L6.mixer"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.6.ffn_up.weight",
-   "rows": "0:256",
-   "scale": 0.0,
-   "note": "L6.n0-256"
   },
   {
    "op": "scale",

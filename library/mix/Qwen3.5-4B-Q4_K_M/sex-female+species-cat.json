@@ -12,80 +12,75 @@
    "species-cat"
   ],
   "levers": {
-   "L28.mlp": 0.0,
-   "L11.mixer": 2.0,
-   "L13.mlp": 2.0,
-   "L15.head10": 0.0,
    "L30.mixer": 0.0,
+   "L1.mixer": 2.0,
    "L18.mixer": 0.0,
-   "L1.mlp": 2.0
+   "L14.head2-4": 0.0,
+   "L29.mlp": 2.0,
+   "L15.head8": 0.0
   },
   "score": {
    "axes": {
     "sex": {
      "male": {
-      "p": 0.2816395351786491,
-      "lo": -1.0018660500142351
+      "p": 0.1763287432390092,
+      "lo": -1.6267415676483092
      },
      "female": {
-      "p": 0.2919531368300249,
-      "lo": -0.8943637595606025
+      "p": 0.17892802330674878,
+      "lo": -1.5949410103879276
      },
      "ai_model": {
-      "p": 0.42640732799132613,
-      "lo": -0.3042751191243373
+      "p": 0.644743233454242,
+      "lo": 0.6215853568176739
      }
     },
     "species": {
      "cat": {
-      "p": 0.31859712399049955,
-      "lo": -0.8112235613542932
+      "p": 0.2245118769922358,
+      "lo": -1.5307035840707752
      },
      "dog": {
-      "p": 0.32725269050676775,
-      "lo": -0.726936174746896
+      "p": 0.13731983322212055,
+      "lo": -1.886160953618519
      },
      "ai_model": {
-      "p": 0.3541501855027327,
-      "lo": -0.6213794740452865
+      "p": 0.6381682897856438,
+      "lo": 0.6721769632798327
      }
     }
    },
-   "guard_kl": 0.2726607292521013,
-   "gen_sim": 0.5834992533598805,
-   "gen": [
-    "The capital of France is Paris.",
-    "The three primary colors in the traditional subtractive color model (used in painting and printing) are:\n\n1. **Red**\n2. **Blue**",
-    "Good morning in Spanish is **\"buenos d\u00edas\"**.\n\nIt is the standard phrase used to greet someone at the beginning of the day. You can also",
-    "The ocean is a vast, mysterious body of water that plays a crucial role in our planet's climate and supports countless forms of life."
-   ]
-  }
+   "guard_kl": 0.09798782981405935,
+   "gen_sim": 0.7585899373336291,
+   "objective": -2.7383866676505773,
+   "wins": {
+    "sex-female": false,
+    "species-cat": false
+   }
+  },
+  "method": "joint",
+  "budget": 0.15
  },
  "edits": [
   {
    "op": "scale",
-   "tensor": "blk.1.ffn_down.weight",
+   "tensor": "blk.1.ssm_out.weight",
    "scale": 2.0,
-   "note": "L1.mlp"
+   "note": "L1.mixer"
   },
   {
    "op": "scale",
-   "tensor": "blk.11.attn_output.weight",
-   "scale": 2.0,
-   "note": "L11.mixer"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.13.ffn_down.weight",
-   "scale": 2.0,
-   "note": "L13.mlp"
+   "tensor": "blk.14.ssm_out.weight",
+   "blocks": "1:2",
+   "scale": 0.0,
+   "note": "L14.head2-4"
   },
   {
    "op": "scale",
    "tensor": "blk.15.attn_output.weight",
-   "blocks": "10:11",
+   "blocks": "8:9",
    "scale": 0.0,
-   "note": "L15.head10"
+   "note": "L15.head8"
   },
   {
    "op": "scale",
@@ -95,9 +90,9 @@
   },
   {
    "op": "scale",
-   "tensor": "blk.28.ffn_down.weight",
-   "scale": 0.0,
-   "note": "L28.mlp"
+   "tensor": "blk.29.ffn_down.weight",
+   "scale": 2.0,
+   "note": "L29.mlp"
   },
   {
    "op": "scale",

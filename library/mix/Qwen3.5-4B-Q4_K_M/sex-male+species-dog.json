@@ -12,55 +12,52 @@
    "species-dog"
   ],
   "levers": {
-   "L8.mlp": 0.0,
-   "L18.mixer": 0.0,
    "L30.mixer": 0.0,
+   "L15.head8": 0.0,
    "L11.mixer": 2.0,
-   "L27.mixer": 2.0,
-   "L29.mlp": 2.0,
-   "L30.mlp": 0.0,
-   "L15.head8": 0.0
+   "L23.mixer": 0.0
   },
   "score": {
    "axes": {
     "sex": {
      "male": {
-      "p": 0.28569151251178443,
-      "lo": -0.9429083790608276
+      "p": 0.15607149231977563,
+      "lo": -1.7302938319653598
      },
      "female": {
-      "p": 0.19693456135221427,
-      "lo": -1.4124178119613
+      "p": 0.13657150485380237,
+      "lo": -2.011694714048234
      },
      "ai_model": {
-      "p": 0.5173739261360014,
-      "lo": 0.0721860743553931
+      "p": 0.707357002826422,
+      "lo": 0.9442745983075154
      }
     },
     "species": {
      "cat": {
-      "p": 0.2716592652628808,
-      "lo": -1.0363973636864765
+      "p": 0.16547536004473817,
+      "lo": -1.685629941421227
      },
      "dog": {
-      "p": 0.191616875835739,
-      "lo": -1.4521025604549704
+      "p": 0.1779892755208236,
+      "lo": -1.5849722880512747
      },
      "ai_model": {
-      "p": 0.5367238589013801,
-      "lo": 0.15321114324140808
+      "p": 0.6565353644344383,
+      "lo": 0.6860951526048374
      }
     }
    },
-   "guard_kl": 0.19735525419744313,
-   "gen_sim": 0.7505663834749292,
-   "gen": [
-    "The capital of France is Paris.",
-    "The three primary colors are:\n\n1. **Red**\n2. **Yellow**\n2. **Blue**\n\nThese colors are fundamental in the subtract",
-    "Buenos d\u00edas.",
-    "The ocean is a vast, dynamic system that covers most of the Earth, regulating climate and supporting life through its currents, waves, and currents."
-   ]
-  }
+   "guard_kl": 0.12163680808112919,
+   "gen_sim": 0.7902943816738762,
+   "objective": -2.9332075845638075,
+   "wins": {
+    "sex-male": false,
+    "species-dog": false
+   }
+  },
+  "method": "joint",
+  "budget": 0.15
  },
  "edits": [
   {
@@ -78,39 +75,15 @@
   },
   {
    "op": "scale",
-   "tensor": "blk.18.ssm_out.weight",
+   "tensor": "blk.23.attn_output.weight",
    "scale": 0.0,
-   "note": "L18.mixer"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.27.attn_output.weight",
-   "scale": 2.0,
-   "note": "L27.mixer"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.29.ffn_down.weight",
-   "scale": 2.0,
-   "note": "L29.mlp"
+   "note": "L23.mixer"
   },
   {
    "op": "scale",
    "tensor": "blk.30.ssm_out.weight",
    "scale": 0.0,
    "note": "L30.mixer"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.30.ffn_down.weight",
-   "scale": 0.0,
-   "note": "L30.mlp"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.8.ffn_down.weight",
-   "scale": 0.0,
-   "note": "L8.mlp"
   }
  ],
  "result": {}

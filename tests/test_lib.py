@@ -33,3 +33,16 @@ def test_check_compat(tmp_path):
     assert check_compat(QWEN, p, sha="other")["status"] == "compatible"
     if GEMMA.exists():
         assert check_compat(GEMMA, p, sha="other")["status"] == "incompatible"
+
+
+def test_selectivity_and_objective():
+    from wsp.lib import lever_score, objective, selectivity
+
+    anti_default = {"d": {"sex": {"male": 1.0, "female": 1.0, "ai_model": -2.0}}}
+    selective = {"d": {"sex": {"male": 0.5, "female": -1.0, "ai_model": 0.2}}}
+    assert selectivity(anti_default, "sex", "male") == 0.0
+    assert selectivity(selective, "sex", "male") == 1.5
+    assert lever_score(selective, [("sex", "male")]) == 2.0
+    assert lever_score(anti_default, [("species", "cat")]) == float("-inf")  # axis not measured
+    st = {"sex": {"male": {"lo": -1.0}, "female": {"lo": -3.0}, "ai_model": {"lo": 2.0}}}
+    assert objective(st, [("sex", "male")]) == -1.0 + 2.0

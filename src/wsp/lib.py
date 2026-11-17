@@ -150,18 +150,58 @@ def atlas_files(atlas_dir: Path, axis: str | None = None) -> list[Path]:
 
 
 def load_trials(paths: list[Path]) -> tuple[dict, list[dict]]:
-    base, trials = None, []
+    """Trials with per-axis log-odds deltas against their own file's baseline. Rows for the same
+    (component, gain) from different axis sets are merged (axes combined, worst guard KL kept)."""
+    merged: dict[tuple, dict] = {}
+    base_all: dict = {"comp": "base", "scale": 1.0, "guard_kl": 0.0, "axes": {}}
     for p in paths:
         if not p.exists():
             continue
-        for r in map(json.loads, p.read_text().splitlines()):
+        rows = [json.loads(l) for l in p.read_text().splitlines() if l.strip()]
+        base = next((r for r in rows if r["comp"] == "base"), None)
+        if base is None:
+            continue
+        base_all["axes"].update(base["axes"])
+        for r in rows:
             if r["comp"] == "base":
-                base = r
-            else:
-                trials.append(r)
-    for r in trials:
-        r["d"] = {a: {o: r["axes"][a][o]["lo"] - base["axes"][a][o]["lo"] for o in r["axes"][a]} for a in r["axes"]}
-    return base, trials
+                continue
+            d = {a: {o: r["axes"][a][o]["lo"] - base["axes"][a][o]["lo"] for o in r["axes"][a]} for a in r["axes"]}
+            key = (r["comp"], r["scale"])
+            m = merged.setdefault(key, {"comp": r["comp"], "scale": r["scale"], "guard_kl": 0.0, "axes": {}, "d": {}})
+            m["axes"].update(r["axes"])
+            m["d"].update(d)
+            m["guard_kl"] = max(m["guard_kl"], r["guard_kl"])
+    return base_all, list(merged.values())
+
+
+def rivals(axis: str, opt: str) -> list[str]:
+    from wsp.axes import AXES
+    return [o for o in AXES[axis].targets() if o != opt]
+
+
+def selectivity(r: dict, axis: str, opt: str) -> float:
+    """Δlogodds(target) minus the largest Δlogodds of another non-default option on the same axis.
+    0 for a lever that lifts every option equally (anti-default); >0 only if it prefers the target."""
+    d = r["d"][axis]
+    rv = [d[o] for o in rivals(axis, opt)]
+    return d[opt] - (max(rv) if rv else 0.0)
+
+
+def lever_score(r: dict, parts: list[tuple[str, str]]) -> float:
+    """Summed per-part gain (target lift + selectivity); rows missing an axis are not candidates."""
+    if any(a not in r["d"] for a, _ in parts):
+        return float("-inf")
+    return sum(r["d"][a][o] + selectivity(r, a, o) for a, o in parts)
+
+
+def objective(stats: dict, parts: list[tuple[str, str]]) -> float:
+    """sum over parts of lo(target) + [lo(target) - max lo(rival)]."""
+    total = 0.0
+    for a, o in parts:
+        lo = stats[a][o]["lo"]
+        rv = [stats[a][x]["lo"] for x in rivals(a, o)]
+        total += lo + (lo - (max(rv) if rv else lo))
+    return total
 
 
 def strongest_layers(trials: list[dict], kind: str, n: int) -> list[int]:
@@ -182,28 +222,41 @@ def strongest_layers(trials: list[dict], kind: str, n: int) -> list[int]:
 MIN_GEN_SIM = 0.6
 
 
-def compose(ev, trials: list[dict], axis: str, opt: str, budget: float, candidates: int, log=print,
+def compose(ev, trials: list[dict], parts: list[tuple[str, str]], budget: float, candidates: int, log=print,
             min_gen_sim: float = MIN_GEN_SIM) -> tuple[dict, dict]:
-    """Stack single levers for axis=opt, most efficient first; keep a lever only if the stack improves
-    the target, stays under the guard-KL budget, and keeps greedy generation close to the base model."""
-    ranked = sorted((r for r in trials if r["d"][axis][opt] > 0 and r["guard_kl"] <= budget),
-                    key=lambda r: -r["d"][axis][opt] / (r["guard_kl"] + 0.02))[:candidates]
+    """Greedy joint composition for one or more (axis, option) targets.
+
+    Candidates are ranked by summed lift + selectivity per unit of guard KL; a lever is kept only if
+    the measured stack improves the joint objective, stays under the guard-KL budget, and keeps
+    greedy generation close to the base model."""
+    scored = [(lever_score(r, parts), r) for r in trials if r["guard_kl"] <= budget]
+    scored = [(sc, r) for sc, r in scored if sc > 0]
+    ranked = [r for _, r in sorted(scored, key=lambda x: -x[0] / (x[1]["guard_kl"] + 0.02))]
     base = ev.base_res
-    cur_lo = axis_stats(ev.items, base, ev.axes)[axis][opt]["lo"]
+    cur = objective(axis_stats(ev.items, base, ev.axes), parts)
     gains: dict[str, float] = {}
     best = None
+    tried = 0
     for r in ranked:
         if r["comp"] in gains:
             continue
+        if tried >= candidates:
+            break
+        tried += 1
         trial = {**gains, r["comp"]: r["scale"]}
         res = ev.run(trial, gen=True)
         st, g = axis_stats(ev.items, res, ev.axes), guard_kl(ev.items, res, base)
         gs = gen_similarity(ev.base_gen, res.meta["gen"])
-        if st[axis][opt]["lo"] > cur_lo and g <= budget and gs >= min_gen_sim:
-            gains, cur_lo = trial, st[axis][opt]["lo"]
-            best = {"axes": st, "guard_kl": g, "gen_sim": gs}
-            log(f"  keep {r['comp']}@{r['scale']:g}: P({opt})={st[axis][opt]['p']:.3f} guard KL {g:.3f} gen sim {gs:.2f}")
-    return gains, best or {"axes": axis_stats(ev.items, base, ev.axes), "guard_kl": 0.0, "gen_sim": 1.0}
+        obj = objective(st, parts)
+        if obj > cur and g <= budget and gs >= min_gen_sim:
+            gains, cur = trial, obj
+            best = {"axes": st, "guard_kl": g, "gen_sim": gs, "objective": obj}
+            log(f"  keep {r['comp']}@{r['scale']:g}: " + " ".join(f"P({o})={st[a][o]['p']:.3f}" for a, o in parts)
+                + f" guard KL {g:.3f} gen sim {gs:.2f}")
+    if best is None:
+        best = {"axes": axis_stats(ev.items, base, ev.axes), "guard_kl": 0.0, "gen_sim": 1.0, "objective": cur}
+    best["wins"] = {f"{a}-{o}": max(best["axes"][a], key=lambda x: best["axes"][a][x]["p"]) == o for a, o in parts}
+    return gains, best
 
 
 def mix_gains(*gain_sets: dict[str, float], log=None) -> dict[str, float]:
@@ -232,7 +285,10 @@ def summary(score: dict) -> str:
     for a, opts in score["axes"].items():
         parts.append(f"{a}: " + " ".join(f"{o}={v['p']:.3f}" for o, v in opts.items()))
     g = f" | gen sim {score['gen_sim']:.2f}" if "gen_sim" in score else ""
-    return " | ".join(parts) + f" | guard KL {score['guard_kl']:.3f}" + g
+    w = ""
+    if "wins" in score:
+        w = " | wins " + " ".join(f"{k.split('-', 1)[1]}{'✓' if v else '✗'}" for k, v in score["wins"].items())
+    return " | ".join(parts) + f" | guard KL {score['guard_kl']:.3f}" + g + w
 
 
 def all_mixes(axes: list[Axis]) -> list[tuple[str, ...]]:

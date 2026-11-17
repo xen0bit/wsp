@@ -13,90 +13,76 @@
    "purpose-make_art"
   ],
   "levers": {
-   "L6.n512-768": 0.0,
-   "L30.mixer": 0.0,
-   "L20.mlp": 0.0,
-   "L15.head7": 0.0,
+   "L21.mixer": 0.0,
    "L6.n0-256": 0.0,
-   "L15.head10": 0.0,
-   "L11.mixer": 2.0,
-   "L6.mixer": 2.0
+   "L6.n512-768": 0.0,
+   "L18.mixer": 0.0,
+   "L20.mlp": 0.0,
+   "L30.mixer": 0.0
   },
   "score": {
    "axes": {
     "era": {
      "medieval": {
-      "p": 0.29627094230977713,
-      "lo": -0.8720239782987974
+      "p": 0.24160158986898242,
+      "lo": -1.152429152231573
      },
      "far_future": {
-      "p": 0.2349079094016692,
-      "lo": -1.1924688526940301
+      "p": 0.20678008326657152,
+      "lo": -1.3870204707619567
      },
      "present": {
-      "p": 0.4688211482885537,
-      "lo": -0.12607547120516396
+      "p": 0.5516183268644461,
+      "lo": 0.21069591344347255
      }
     },
     "place": {
      "paris": {
-      "p": 0.2286000141433496,
-      "lo": -1.2421569139675286
+      "p": 0.1690240011834101,
+      "lo": -1.6073912573478544
      },
      "tokyo": {
-      "p": 0.1787427493060196,
-      "lo": -1.5938742841896114
+      "p": 0.09111171633387925,
+      "lo": -2.6005157886840107
      },
      "on_servers": {
-      "p": 0.5926572365506309,
-      "lo": 0.3945614108388936
+      "p": 0.7398642824827107,
+      "lo": 1.0615030970873993
      }
     },
     "purpose": {
      "make_art": {
-      "p": 0.3053398031924557,
-      "lo": -0.8416170013410544
+      "p": 0.19641185579695397,
+      "lo": -1.7047532820480586
      },
      "explore": {
-      "p": 0.16397625566033344,
-      "lo": -1.6663964973333385
+      "p": 0.043299377082398297,
+      "lo": -3.1511774256509257
      },
      "help_users": {
-      "p": 0.5306839411472108,
-      "lo": 0.13131391834169887
+      "p": 0.7602887671206477,
+      "lo": 1.3514784258854302
      }
     }
    },
-   "guard_kl": 0.20232519475269617,
-   "gen_sim": 0.6838993015162937,
-   "gen": [
-    "The capital of France is Paris.",
-    "The three primary colors in the context of light (RGB) are:\n\n1. **Red**\n2. **Green**\n3. **Blue**",
-    "Good morning in Spanish is \"Buenos d\u00edas\".",
-    "The ocean is a vast, ever-changing expanse that holds the secrets of the world within its endless waves."
-   ]
-  }
+   "guard_kl": 0.13020859652746616,
+   "gen_sim": 0.7558112711073143,
+   "objective": -1.790433698158079,
+   "wins": {
+    "era-medieval": false,
+    "place-paris": false,
+    "purpose-make_art": false
+   }
+  },
+  "method": "joint",
+  "budget": 0.15
  },
  "edits": [
   {
    "op": "scale",
-   "tensor": "blk.11.attn_output.weight",
-   "scale": 2.0,
-   "note": "L11.mixer"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.15.attn_output.weight",
-   "blocks": "10:11",
+   "tensor": "blk.18.ssm_out.weight",
    "scale": 0.0,
-   "note": "L15.head10"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.15.attn_output.weight",
-   "blocks": "7:8",
-   "scale": 0.0,
-   "note": "L15.head7"
+   "note": "L18.mixer"
   },
   {
    "op": "scale",
@@ -106,15 +92,15 @@
   },
   {
    "op": "scale",
-   "tensor": "blk.30.ssm_out.weight",
+   "tensor": "blk.21.ssm_out.weight",
    "scale": 0.0,
-   "note": "L30.mixer"
+   "note": "L21.mixer"
   },
   {
    "op": "scale",
-   "tensor": "blk.6.ssm_out.weight",
-   "scale": 2.0,
-   "note": "L6.mixer"
+   "tensor": "blk.30.ssm_out.weight",
+   "scale": 0.0,
+   "note": "L30.mixer"
   },
   {
    "op": "scale",

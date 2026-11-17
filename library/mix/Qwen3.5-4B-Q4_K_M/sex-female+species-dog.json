@@ -12,80 +12,65 @@
    "species-dog"
   ],
   "levers": {
-   "L28.mlp": 0.0,
-   "L11.mixer": 2.0,
-   "L13.mlp": 2.0,
    "L29.mlp": 2.0,
-   "L30.mixer": 0.0,
-   "L30.mlp": 0.0,
-   "L15.head8": 0.0
+   "L18.mlp": 2.0,
+   "L31.mixer": 2.0,
+   "L25.mlp": 0.0
   },
   "score": {
    "axes": {
     "sex": {
      "male": {
-      "p": 0.20583684478642822,
-      "lo": -1.3945529186535963
+      "p": 0.08922184463057392,
+      "lo": -2.7066278565137836
      },
      "female": {
-      "p": 0.1858164599377103,
-      "lo": -1.5176332464775388
+      "p": 0.19858648716691468,
+      "lo": -1.5794211688731066
      },
      "ai_model": {
-      "p": 0.6083466952758615,
-      "lo": 0.4440681534788894
+      "p": 0.7121916682025115,
+      "lo": 1.0124369229860912
      }
     },
     "species": {
      "cat": {
-      "p": 0.2684903151417187,
-      "lo": -1.0203614296228234
+      "p": 0.07993346295205465,
+      "lo": -3.194219693610611
      },
      "dog": {
-      "p": 0.22523646913697473,
-      "lo": -1.2535104399824206
+      "p": 0.17191690446847824,
+      "lo": -1.741860353321691
      },
      "ai_model": {
-      "p": 0.5062732157213065,
-      "lo": 0.025254168785030857
+      "p": 0.748149632579467,
+      "lo": 1.3097793246140412
      }
     }
    },
-   "guard_kl": 0.2743925432986388,
-   "gen_sim": 0.5786580915891261,
-   "gen": [
-    "The capital of France is Paris.",
-    "The three primary colors in subtractive color mixing (subtraction of light) are:\n\n1. **Red**\n2. **Green**\n3",
-    "La translation of \"good morning\" into Spanish is: **La translation of \"good morning\" into Spanish is: ****\"Pienso que te has",
-    "The ocean is an ancient, dynamic, and vital force that covers most of our planet, regulating climate and supporting an incredible diversity of life."
-   ]
-  }
+   "guard_kl": 0.10356605831052913,
+   "gen_sim": 0.7258298903176899,
+   "objective": -0.7417154942652004,
+   "wins": {
+    "sex-female": false,
+    "species-dog": false
+   }
+  },
+  "method": "joint",
+  "budget": 0.15
  },
  "edits": [
   {
    "op": "scale",
-   "tensor": "blk.11.attn_output.weight",
+   "tensor": "blk.18.ffn_down.weight",
    "scale": 2.0,
-   "note": "L11.mixer"
+   "note": "L18.mlp"
   },
   {
    "op": "scale",
-   "tensor": "blk.13.ffn_down.weight",
-   "scale": 2.0,
-   "note": "L13.mlp"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.15.attn_output.weight",
-   "blocks": "8:9",
+   "tensor": "blk.25.ffn_down.weight",
    "scale": 0.0,
-   "note": "L15.head8"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.28.ffn_down.weight",
-   "scale": 0.0,
-   "note": "L28.mlp"
+   "note": "L25.mlp"
   },
   {
    "op": "scale",
@@ -95,15 +80,9 @@
   },
   {
    "op": "scale",
-   "tensor": "blk.30.ssm_out.weight",
-   "scale": 0.0,
-   "note": "L30.mixer"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.30.ffn_down.weight",
-   "scale": 0.0,
-   "note": "L30.mlp"
+   "tensor": "blk.31.attn_output.weight",
+   "scale": 2.0,
+   "note": "L31.mixer"
   }
  ],
  "result": {}

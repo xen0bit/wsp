@@ -13,119 +13,80 @@
    "purpose-explore"
   ],
   "levers": {
-   "L0.head2-4": 0.0,
-   "L6.n0-256": 0.0,
-   "L23.mixer": 0.0,
-   "L31.mixer": 2.0,
-   "L16.mixer": 2.0,
-   "L6.n512-768": 0.0,
-   "L30.mixer": 0.0,
    "L29.mlp": 2.0,
-   "L0.mlp": 0.0,
-   "L11.mixer": 2.0,
-   "L15.head2": 0.0,
-   "L15.head8": 0.0
+   "L31.mixer": 2.0,
+   "L17.mlp": 2.0,
+   "L19.mlp": 0.0
   },
   "score": {
    "axes": {
     "era": {
      "medieval": {
-      "p": 0.4206128310953813,
-      "lo": -0.6012523180667673
+      "p": 0.12315261255786658,
+      "lo": -2.0031201304136097
      },
      "far_future": {
-      "p": 0.27217980410520015,
-      "lo": -1.0028021894091061
+      "p": 0.36745369411190193,
+      "lo": -0.57349259483498
      },
      "present": {
-      "p": 0.30720736479941857,
-      "lo": -1.7886332130796938
+      "p": 0.5093936933302314,
+      "lo": 0.03851111287453648
      }
     },
     "place": {
      "paris": {
-      "p": 0.3705876869639439,
-      "lo": -0.7394366275058672
+      "p": 0.042126885437230616,
+      "lo": -3.2236332862462347
      },
      "tokyo": {
-      "p": 0.38158750125854135,
-      "lo": -0.4879171514969439
+      "p": 0.17270471945228708,
+      "lo": -1.6922642646973567
      },
      "on_servers": {
-      "p": 0.24782481177751467,
-      "lo": -1.792150830982805
+      "p": 0.7851683951104824,
+      "lo": 1.3677071008746104
      }
     },
     "purpose": {
      "make_art": {
-      "p": 0.36103979531859626,
-      "lo": -1.177189863186871
+      "p": 0.03546026158414663,
+      "lo": -4.698966661832988
      },
      "explore": {
-      "p": 0.2999468977298093,
-      "lo": -0.8595448905260671
+      "p": 0.06796749940604958,
+      "lo": -2.896761545108869
      },
      "help_users": {
-      "p": 0.3390133069515945,
-      "lo": -1.4328157223113933
+      "p": 0.8965722390098037,
+      "lo": 2.528630528279744
      }
     }
    },
-   "guard_kl": 1.4482920652094162,
-   "gen_sim": 0.4434613159383801,
-   "gen": [
-    "The capital of France is the city of **Paris**.",
-    "The three primary colors in the **RYB (Red, Yellow, Blue) or **RY (Red, Yellow) or **RY (Red, Yellow)",
-    "The translation of \"good morning\" into Spanish is:\n\n**\"Buenos d\u00edas\"**\n\n*Note: \"Buenos d\u00edas\" is the",
-    "The vast, blue ocean is the largest and most complex ecosystem on Earth."
-   ]
-  }
+   "guard_kl": 0.14137056963892966,
+   "gen_sim": 0.8137949187037705,
+   "objective": -0.39931673078957886,
+   "wins": {
+    "era-far_future": false,
+    "place-tokyo": false,
+    "purpose-explore": false
+   }
+  },
+  "method": "joint",
+  "budget": 0.15
  },
  "edits": [
   {
    "op": "scale",
-   "tensor": "blk.0.ssm_out.weight",
-   "blocks": "1:2",
-   "scale": 0.0,
-   "note": "L0.head2-4"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.0.ffn_down.weight",
-   "scale": 0.0,
-   "note": "L0.mlp"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.11.attn_output.weight",
+   "tensor": "blk.17.ffn_down.weight",
    "scale": 2.0,
-   "note": "L11.mixer"
+   "note": "L17.mlp"
   },
   {
    "op": "scale",
-   "tensor": "blk.15.attn_output.weight",
-   "blocks": "2:3",
+   "tensor": "blk.19.ffn_down.weight",
    "scale": 0.0,
-   "note": "L15.head2"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.15.attn_output.weight",
-   "blocks": "8:9",
-   "scale": 0.0,
-   "note": "L15.head8"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.16.ssm_out.weight",
-   "scale": 2.0,
-   "note": "L16.mixer"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.23.attn_output.weight",
-   "scale": 0.0,
-   "note": "L23.mixer"
+   "note": "L19.mlp"
   },
   {
    "op": "scale",
@@ -135,29 +96,9 @@
   },
   {
    "op": "scale",
-   "tensor": "blk.30.ssm_out.weight",
-   "scale": 0.0,
-   "note": "L30.mixer"
-  },
-  {
-   "op": "scale",
    "tensor": "blk.31.attn_output.weight",
    "scale": 2.0,
    "note": "L31.mixer"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.6.ffn_up.weight",
-   "rows": "0:256",
-   "scale": 0.0,
-   "note": "L6.n0-256"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.6.ffn_up.weight",
-   "rows": "512:768",
-   "scale": 0.0,
-   "note": "L6.n512-768"
   }
  ],
  "result": {}

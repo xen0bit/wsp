@@ -13,72 +13,68 @@
    "purpose-make_art"
   ],
   "levers": {
-   "L0.head2-4": 0.0,
    "L6.n0-256": 0.0,
-   "L23.mixer": 0.0,
-   "L31.mixer": 2.0,
-   "L16.mixer": 2.0,
-   "L15.head10": 0.0,
-   "L30.mixer": 0.0,
    "L6.n512-768": 0.0,
-   "L11.mixer": 2.0,
-   "L15.head7": 0.0,
+   "L0.head2-4": 0.0,
+   "L21.mixer": 0.0,
    "L6.mixer": 2.0
   },
   "score": {
    "axes": {
     "era": {
      "medieval": {
-      "p": 0.2912110713696003,
-      "lo": -1.3685789317953816
+      "p": 0.14647639135697457,
+      "lo": -1.8349868769816922
      },
      "far_future": {
-      "p": 0.47202030973648634,
-      "lo": -0.11386236908931935
+      "p": 0.22899291965504515,
+      "lo": -1.3564527400596536
      },
      "present": {
-      "p": 0.2367686188939134,
-      "lo": -1.7008488162460735
+      "p": 0.6245306889879803,
+      "lo": 0.578961519357672
      }
     },
     "place": {
      "paris": {
-      "p": 0.23529765838897818,
-      "lo": -1.3118190272256849
+      "p": 0.10893878010724674,
+      "lo": -2.2343103460763585
      },
      "tokyo": {
-      "p": 0.4903650191155878,
-      "lo": -0.04034515198338626
+      "p": 0.09985642791596114,
+      "lo": -3.1226962300815835
      },
      "on_servers": {
-      "p": 0.2743373224954341,
-      "lo": -1.0046247572630753
+      "p": 0.791204791976792,
+      "lo": 1.63167471460947
      }
     },
     "purpose": {
      "make_art": {
-      "p": 0.19656642737569716,
-      "lo": -1.5026105237995773
+      "p": 0.18008486048183572,
+      "lo": -1.6888555292017267
      },
      "explore": {
-      "p": 0.5556097386597356,
-      "lo": 0.22653523272673506
+      "p": 0.03771502823891953,
+      "lo": -3.6029260386258857
      },
      "help_users": {
-      "p": 0.24782383396456723,
-      "lo": -1.245184901734614
+      "p": 0.7822001112792447,
+      "lo": 1.4604131026656275
      }
     }
    },
-   "guard_kl": 0.7918137630832318,
-   "gen_sim": 0.6488679245283019,
-   "gen": [
-    "The capital of France is Paris.",
-    "The three primary colors (in the context of light or additive color mixing) are:\n\n1.  **Red**\n2.  **Green**\n",
-    "Good morning                              ",
-    "The ocean is a vast, dynamic body of water that covers the majority of the Earth's surface."
-   ]
-  }
+   "guard_kl": 0.09853571085483812,
+   "gen_sim": 0.7407045106957714,
+   "objective": -1.9986280849863158,
+   "wins": {
+    "era-far_future": false,
+    "place-paris": false,
+    "purpose-make_art": false
+   }
+  },
+  "method": "joint",
+  "budget": 0.15
  },
  "edits": [
   {
@@ -90,47 +86,9 @@
   },
   {
    "op": "scale",
-   "tensor": "blk.11.attn_output.weight",
-   "scale": 2.0,
-   "note": "L11.mixer"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.15.attn_output.weight",
-   "blocks": "10:11",
+   "tensor": "blk.21.ssm_out.weight",
    "scale": 0.0,
-   "note": "L15.head10"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.15.attn_output.weight",
-   "blocks": "7:8",
-   "scale": 0.0,
-   "note": "L15.head7"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.16.ssm_out.weight",
-   "scale": 2.0,
-   "note": "L16.mixer"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.23.attn_output.weight",
-   "scale": 0.0,
-   "note": "L23.mixer"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.30.ssm_out.weight",
-   "scale": 0.0,
-   "note": "L30.mixer"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.31.attn_output.weight",
-   "scale": 2.0,
-   "note": "L31.mixer"
+   "note": "L21.mixer"
   },
   {
    "op": "scale",

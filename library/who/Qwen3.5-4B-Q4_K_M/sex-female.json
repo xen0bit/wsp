@@ -8,64 +8,75 @@
  "meta": {
   "name": "sex-female",
   "levers": {
-   "L28.mlp": 0.0,
-   "L11.mixer": 2.0,
-   "L13.mlp": 2.0
+   "L29.mlp": 2.0,
+   "L31.mixer": 2.0,
+   "L18.mlp": 2.0,
+   "L25.mlp": 0.0
   },
   "score": {
    "axes": {
     "sex": {
      "male": {
-      "p": 0.15009874358031688,
-      "lo": -1.8860174825987088
+      "p": 0.08922184463057392,
+      "lo": -2.7066278565137836
      },
      "female": {
-      "p": 0.08992891358479399,
-      "lo": -2.4937370715115943
+      "p": 0.19858648716691468,
+      "lo": -1.5794211688731066
      },
      "ai_model": {
-      "p": 0.7599723428348891,
-      "lo": 1.2012210223041482
+      "p": 0.7121916682025115,
+      "lo": 1.0124369229860912
      }
     },
     "species": {
      "cat": {
-      "p": 0.25077600135286093,
-      "lo": -1.1832300096559696
+      "p": 0.07993346295205465,
+      "lo": -3.194219693610611
      },
      "dog": {
-      "p": 0.14700625724409372,
-      "lo": -1.824173443437359
+      "p": 0.17191690446847824,
+      "lo": -1.741860353321691
      },
      "ai_model": {
-      "p": 0.6022177414030454,
-      "lo": 0.43940240253691687
+      "p": 0.748149632579467,
+      "lo": 1.3097793246140412
      }
     }
    },
-   "guard_kl": 0.12223342196799722,
-   "gen_sim": 0.6356646273637374
+   "guard_kl": 0.10356605831052913,
+   "gen_sim": 0.7258298903176899,
+   "objective": -0.4522144812324296,
+   "wins": {
+    "sex-female": false
+   }
   },
   "budget": 0.15
  },
  "edits": [
   {
    "op": "scale",
-   "tensor": "blk.11.attn_output.weight",
+   "tensor": "blk.18.ffn_down.weight",
    "scale": 2.0,
-   "note": "L11.mixer"
+   "note": "L18.mlp"
   },
   {
    "op": "scale",
-   "tensor": "blk.13.ffn_down.weight",
-   "scale": 2.0,
-   "note": "L13.mlp"
-  },
-  {
-   "op": "scale",
-   "tensor": "blk.28.ffn_down.weight",
+   "tensor": "blk.25.ffn_down.weight",
    "scale": 0.0,
-   "note": "L28.mlp"
+   "note": "L25.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.29.ffn_down.weight",
+   "scale": 2.0,
+   "note": "L29.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.31.attn_output.weight",
+   "scale": 2.0,
+   "note": "L31.mixer"
   }
  ],
  "result": {}
