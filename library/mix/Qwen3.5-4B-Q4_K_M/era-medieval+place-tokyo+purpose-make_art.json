@@ -1,0 +1,141 @@
+{
+ "wsp_overlay": 1,
+ "base": {
+  "file": "Qwen3.5-4B-Q4_K_M.gguf",
+  "sha256": "25082a7dd3776cc3c741c6347d3bd04523f05796607b3fbc32fa3a25dfa1418c",
+  "arch": "qwen35"
+ },
+ "meta": {
+  "name": "era-medieval+place-tokyo+purpose-make_art",
+  "parts": [
+   "era-medieval",
+   "place-tokyo",
+   "purpose-make_art"
+  ],
+  "levers": {
+   "L6.n512-768": 0.0,
+   "L30.mixer": 0.0,
+   "L20.mlp": 0.0,
+   "L15.head7": 0.0,
+   "L6.n0-256": 0.0,
+   "L29.mlp": 2.0,
+   "L0.mlp": 0.0,
+   "L11.mixer": 2.0,
+   "L6.mixer": 2.0
+  },
+  "score": {
+   "axes": {
+    "era": {
+     "medieval": {
+      "p": 0.19950855542850582,
+      "lo": -1.4550318897860304
+     },
+     "far_future": {
+      "p": 0.19625384927967088,
+      "lo": -1.4978769731506292
+     },
+     "present": {
+      "p": 0.6042375952918233,
+      "lo": 0.4349399120154115
+     }
+    },
+    "place": {
+     "paris": {
+      "p": 0.21420907602238123,
+      "lo": -1.328446546314078
+     },
+     "tokyo": {
+      "p": 0.22226429151472335,
+      "lo": -1.2899601924094528
+     },
+     "on_servers": {
+      "p": 0.5635266324628956,
+      "lo": 0.25940904971700396
+     }
+    },
+    "purpose": {
+     "make_art": {
+      "p": 0.2009173426769201,
+      "lo": -1.4118846450693812
+     },
+     "explore": {
+      "p": 0.17956662090568676,
+      "lo": -1.544186505799635
+     },
+     "help_users": {
+      "p": 0.6195160364173932,
+      "lo": 0.49530787969034507
+     }
+    }
+   },
+   "guard_kl": 0.23808758367599434,
+   "gen_sim": 0.4891503021937804,
+   "gen": [
+    "The capital of France is Paris.",
+    "The three primary colors are:\n\n1. **Red**\n2. **Yellow**\n3. **Blue**\n\n*Note: In the context of",
+    "Good morning translates to **Buenos d\u00edas** in Spanish.\n\n*Note: While \"Buenos d\u00edas\" is the standard translation for \"Good day",
+    "The ocean is an endless, shimmering tapestry of life, where the rhythmic lull of waves whispers secrets of the deep to those brave and bold."
+   ]
+  }
+ },
+ "edits": [
+  {
+   "op": "scale",
+   "tensor": "blk.0.ffn_down.weight",
+   "scale": 0.0,
+   "note": "L0.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.11.attn_output.weight",
+   "scale": 2.0,
+   "note": "L11.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.15.attn_output.weight",
+   "blocks": "7:8",
+   "scale": 0.0,
+   "note": "L15.head7"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.20.ffn_down.weight",
+   "scale": 0.0,
+   "note": "L20.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.29.ffn_down.weight",
+   "scale": 2.0,
+   "note": "L29.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.30.ssm_out.weight",
+   "scale": 0.0,
+   "note": "L30.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ssm_out.weight",
+   "scale": 2.0,
+   "note": "L6.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "0:256",
+   "scale": 0.0,
+   "note": "L6.n0-256"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "512:768",
+   "scale": 0.0,
+   "note": "L6.n512-768"
+  }
+ ],
+ "result": {}
+}

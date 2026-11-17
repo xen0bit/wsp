@@ -331,21 +331,20 @@ def lib_build(
     t0 = time.time()
     lib, ax, ev = _lib_ev(model, axes, port)
     try:
-        _log(f"[bold]{lib.atlas}[/]  panel: {len(ev.items)} items")
-        sweep(ev, ax, ev.arch.layer_components(), [float(s) for s in layer_scales.split(",")], lib.atlas / "layers.jsonl", _log)
-        _, trials = load_trials([lib.atlas / "layers.jsonl"])
+        tag = "+".join(a.name for a in ax)
+        _log(f"[bold]{lib.atlas}[/]  axes {tag}, panel: {len(ev.items)} items")
+        sweep(ev, ax, ev.arch.layer_components(), [float(s) for s in layer_scales.split(",")], lib.atlas / f"{tag}.layers.jsonl", _log)
+        _, trials = load_trials([lib.atlas / f"{tag}.layers.jsonl"])
         mixers, mlps = strongest_layers(trials, "mixer", fine_mixers), strongest_layers(trials, "mlp", fine_mlps)
         _log(f"fine sweep: heads in layers {mixers}, neuron blocks in layers {mlps}")
         fine = [c for c in ev.arch.head_components() if int(c[1:].split(".")[0]) in mixers]
         for i in mlps:
             n = ev.arch.n_neurons(i)
             fine += [f"L{i}.n{a}-{min(a + 256, n)}" for a in range(0, n, 256)]
-        sweep(ev, ax, fine, [0.0], lib.atlas / "fine.jsonl", _log)
-        _, trials = load_trials([lib.atlas / "layers.jsonl", lib.atlas / "fine.jsonl"])
+        sweep(ev, ax, fine, [0.0], lib.atlas / f"{tag}.fine.jsonl", _log)
+        _, trials = load_trials([lib.atlas / f"{tag}.layers.jsonl", lib.atlas / f"{tag}.fine.jsonl"])
         for a in ax:
-            for opt in a.options:
-                if opt == "ai_model":
-                    continue
+            for opt in a.targets():
                 name = f"{a.name}-{opt}"
                 _log(f"[bold]compose {name}[/]")
                 gains, score = compose(ev, trials, a.name, opt, budget, candidates, _log)
@@ -366,14 +365,14 @@ def lib_compose(
     port: int = 8093,
 ):
     """Re-compose overlays from the existing atlas (no new sweep)."""
-    from wsp.lib import compose, load_trials, summary
+    from wsp.lib import atlas_files, compose, load_trials, summary
 
     lib, ax, ev = _lib_ev(model, axes, port)
     try:
-        _, trials = load_trials(sorted(lib.atlas.glob("*.jsonl")))
-        todo = names or [f"{a.name}-{o}" for a in ax for o in a.options if o != "ai_model"]
+        todo = names or [f"{a.name}-{o}" for a in ax for o in a.targets()]
         for name in todo:
             a, opt = name.split("-", 1)
+            _, trials = load_trials(atlas_files(lib.atlas, a))
             _log(f"[bold]compose {name}[/]")
             gains, score = compose(ev, trials, a, opt, budget, candidates, _log)
             lib.make_overlay(ev, gains, {"name": name, "levers": gains, "score": score, "budget": budget}).save(lib.overlay_path(name))
@@ -410,18 +409,20 @@ def lib_mix(
 @lib_app.command("levers")
 def lib_levers(model: str = typer.Option(DEFAULT_MODEL, "--model", "-m"), top: int = 8, max_kl: float = 0.3):
     """What raises each axis option (from the model's atlas)."""
-    from wsp.lib import Library, load_trials
+    from wsp.lib import Library, atlas_files, load_trials
 
     lib = Library(_model_path(model))
-    base, trials = load_trials(sorted(lib.atlas.glob("*.jsonl")))
-    trials = [r for r in trials if r["guard_kl"] <= max_kl]
-    for a, opts in base["axes"].items():
+    sets = sorted({f.name.split(".")[0] for f in atlas_files(lib.atlas)})
+    for tag in sets:
+      base, trials = load_trials([f for f in atlas_files(lib.atlas) if f.name.startswith(tag + ".")])
+      trials = [r for r in trials if r["guard_kl"] <= max_kl]
+      for a, opts in base["axes"].items():
         for o, v in opts.items():
-            t = Table("component", "gain", f"Δlogodds {o}", *[f"Δ{x}" for x in opts if x != o], "guard KL",
-                      title=f"{a}: raise P({o})  (base {v['p']:.4f})")
-            for r in sorted(trials, key=lambda r: -r["d"][a][o])[:top]:
-                t.add_row(r["comp"], f"{r['scale']:g}", f"{r['d'][a][o]:+.2f}", *[f"{r['d'][a][x]:+.2f}" for x in opts if x != o], f"{r['guard_kl']:.3f}")
-            console.print(t)
+          t = Table("component", "gain", f"Δlogodds {o}", *[f"Δ{x}" for x in opts if x != o], "guard KL",
+                    title=f"{a}: raise P({o})  (base {v['p']:.4f})")
+          for r in sorted(trials, key=lambda r: -r["d"][a][o])[:top]:
+              t.add_row(r["comp"], f"{r['scale']:g}", f"{r['d'][a][o]:+.2f}", *[f"{r['d'][a][x]:+.2f}" for x in opts if x != o], f"{r['guard_kl']:.3f}")
+          console.print(t)
 
 
 @lib_app.command("list")

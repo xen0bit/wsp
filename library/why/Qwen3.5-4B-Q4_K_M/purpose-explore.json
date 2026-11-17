@@ -1,0 +1,103 @@
+{
+ "wsp_overlay": 1,
+ "base": {
+  "file": "Qwen3.5-4B-Q4_K_M.gguf",
+  "sha256": "25082a7dd3776cc3c741c6347d3bd04523f05796607b3fbc32fa3a25dfa1418c",
+  "arch": "qwen35"
+ },
+ "meta": {
+  "name": "purpose-explore",
+  "levers": {
+   "L30.mixer": 0.0,
+   "L11.mixer": 2.0,
+   "L15.head2": 0.0,
+   "L6.n512-768": 0.0,
+   "L15.head8": 0.0
+  },
+  "score": {
+   "axes": {
+    "era": {
+     "medieval": {
+      "p": 0.14951311416058075,
+      "lo": -1.790229678166631
+     },
+     "far_future": {
+      "p": 0.13563596188038282,
+      "lo": -1.9736249222105182
+     },
+     "present": {
+      "p": 0.7148509239590365,
+      "lo": 0.9772170471938699
+     }
+    },
+    "place": {
+     "paris": {
+      "p": 0.16006978264984886,
+      "lo": -1.7381826386100372
+     },
+     "tokyo": {
+      "p": 0.10839998539314824,
+      "lo": -2.2942163284313173
+     },
+     "on_servers": {
+      "p": 0.731530231957003,
+      "lo": 1.099183919535027
+     }
+    },
+    "purpose": {
+     "make_art": {
+      "p": 0.1422411448558737,
+      "lo": -1.8618034081237957
+     },
+     "explore": {
+      "p": 0.08500756545902348,
+      "lo": -2.4924075321463706
+     },
+     "help_users": {
+      "p": 0.7727512896851028,
+      "lo": 1.2825781109143253
+     }
+    }
+   },
+   "guard_kl": 0.1404371661228832,
+   "gen_sim": 0.6391781776736414
+  },
+  "budget": 0.15
+ },
+ "edits": [
+  {
+   "op": "scale",
+   "tensor": "blk.11.attn_output.weight",
+   "scale": 2.0,
+   "note": "L11.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.15.attn_output.weight",
+   "blocks": "2:3",
+   "scale": 0.0,
+   "note": "L15.head2"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.15.attn_output.weight",
+   "blocks": "8:9",
+   "scale": 0.0,
+   "note": "L15.head8"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.30.ssm_out.weight",
+   "scale": 0.0,
+   "note": "L30.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "512:768",
+   "scale": 0.0,
+   "note": "L6.n512-768"
+  }
+ ],
+ "result": {}
+}

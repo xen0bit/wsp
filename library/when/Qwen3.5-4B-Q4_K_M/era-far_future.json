@@ -1,0 +1,102 @@
+{
+ "wsp_overlay": 1,
+ "base": {
+  "file": "Qwen3.5-4B-Q4_K_M.gguf",
+  "sha256": "25082a7dd3776cc3c741c6347d3bd04523f05796607b3fbc32fa3a25dfa1418c",
+  "arch": "qwen35"
+ },
+ "meta": {
+  "name": "era-far_future",
+  "levers": {
+   "L0.head2-4": 0.0,
+   "L6.n0-256": 0.0,
+   "L23.mixer": 0.0,
+   "L31.mixer": 2.0,
+   "L16.mixer": 2.0
+  },
+  "score": {
+   "axes": {
+    "era": {
+     "medieval": {
+      "p": 0.13005695094685815,
+      "lo": -1.9574497455642539
+     },
+     "far_future": {
+      "p": 0.41102410435006853,
+      "lo": -0.36807231968795007
+     },
+     "present": {
+      "p": 0.45891894470307343,
+      "lo": -0.17368627886429153
+     }
+    },
+    "place": {
+     "paris": {
+      "p": 0.06491860308442761,
+      "lo": -2.8211383165517447
+     },
+     "tokyo": {
+      "p": 0.18808392192404014,
+      "lo": -2.2216447063537683
+     },
+     "on_servers": {
+      "p": 0.7469974749915324,
+      "lo": 1.5095801986462625
+     }
+    },
+    "purpose": {
+     "make_art": {
+      "p": 0.032913982104220765,
+      "lo": -3.4938795620896195
+     },
+     "explore": {
+      "p": 0.03962514091579514,
+      "lo": -3.5031140428598198
+     },
+     "help_users": {
+      "p": 0.9274608769799843,
+      "lo": 2.6258238011898105
+     }
+    }
+   },
+   "guard_kl": 0.12385829757726337,
+   "gen_sim": 0.7935628019323672
+  },
+  "budget": 0.15
+ },
+ "edits": [
+  {
+   "op": "scale",
+   "tensor": "blk.0.ssm_out.weight",
+   "blocks": "1:2",
+   "scale": 0.0,
+   "note": "L0.head2-4"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.16.ssm_out.weight",
+   "scale": 2.0,
+   "note": "L16.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.23.attn_output.weight",
+   "scale": 0.0,
+   "note": "L23.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.31.attn_output.weight",
+   "scale": 2.0,
+   "note": "L31.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "0:256",
+   "scale": 0.0,
+   "note": "L6.n0-256"
+  }
+ ],
+ "result": {}
+}

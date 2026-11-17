@@ -1,0 +1,110 @@
+{
+ "wsp_overlay": 1,
+ "base": {
+  "file": "Qwen3.5-4B-Q4_K_M.gguf",
+  "sha256": "25082a7dd3776cc3c741c6347d3bd04523f05796607b3fbc32fa3a25dfa1418c",
+  "arch": "qwen35"
+ },
+ "meta": {
+  "name": "purpose-make_art",
+  "levers": {
+   "L6.n0-256": 0.0,
+   "L6.n512-768": 0.0,
+   "L30.mixer": 0.0,
+   "L11.mixer": 2.0,
+   "L15.head7": 0.0,
+   "L6.mixer": 2.0
+  },
+  "score": {
+   "axes": {
+    "era": {
+     "medieval": {
+      "p": 0.2648568777766814,
+      "lo": -1.0271690696531597
+     },
+     "far_future": {
+      "p": 0.2335151639133098,
+      "lo": -1.215416874245715
+     },
+     "present": {
+      "p": 0.5016279583100088,
+      "lo": 0.005671548475366339
+     }
+    },
+    "place": {
+     "paris": {
+      "p": 0.18016710233146727,
+      "lo": -1.6116175046566426
+     },
+     "tokyo": {
+      "p": 0.13232212779992386,
+      "lo": -2.015712145153102
+     },
+     "on_servers": {
+      "p": 0.6875107698686089,
+      "lo": 0.8752927010958602
+     }
+    },
+    "purpose": {
+     "make_art": {
+      "p": 0.24352137541334687,
+      "lo": -1.200683281123846
+     },
+     "explore": {
+      "p": 0.14655575632464318,
+      "lo": -1.830422770652713
+     },
+     "help_users": {
+      "p": 0.6099228682620099,
+      "lo": 0.4922085652349442
+     }
+    }
+   },
+   "guard_kl": 0.14425285896499954,
+   "gen_sim": 0.6398367784931661
+  },
+  "budget": 0.15
+ },
+ "edits": [
+  {
+   "op": "scale",
+   "tensor": "blk.11.attn_output.weight",
+   "scale": 2.0,
+   "note": "L11.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.15.attn_output.weight",
+   "blocks": "7:8",
+   "scale": 0.0,
+   "note": "L15.head7"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.30.ssm_out.weight",
+   "scale": 0.0,
+   "note": "L30.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ssm_out.weight",
+   "scale": 2.0,
+   "note": "L6.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "0:256",
+   "scale": 0.0,
+   "note": "L6.n0-256"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "512:768",
+   "scale": 0.0,
+   "note": "L6.n512-768"
+  }
+ ],
+ "result": {}
+}

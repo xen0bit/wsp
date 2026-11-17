@@ -1,0 +1,158 @@
+{
+ "wsp_overlay": 1,
+ "base": {
+  "file": "Qwen3.5-4B-Q4_K_M.gguf",
+  "sha256": "25082a7dd3776cc3c741c6347d3bd04523f05796607b3fbc32fa3a25dfa1418c",
+  "arch": "qwen35"
+ },
+ "meta": {
+  "name": "era-far_future+place-paris+purpose-explore",
+  "parts": [
+   "era-far_future",
+   "place-paris",
+   "purpose-explore"
+  ],
+  "levers": {
+   "L0.head2-4": 0.0,
+   "L6.n0-256": 0.0,
+   "L23.mixer": 0.0,
+   "L31.mixer": 2.0,
+   "L16.mixer": 2.0,
+   "L15.head10": 0.0,
+   "L30.mixer": 0.0,
+   "L6.n512-768": 0.0,
+   "L11.mixer": 2.0,
+   "L15.head2": 0.0,
+   "L15.head8": 0.0
+  },
+  "score": {
+   "axes": {
+    "era": {
+     "medieval": {
+      "p": 0.27420613322414084,
+      "lo": -1.0386085253253747
+     },
+     "far_future": {
+      "p": 0.5141171024429954,
+      "lo": 0.05709040259560416
+     },
+     "present": {
+      "p": 0.2116767643328638,
+      "lo": -1.4254757796912225
+     }
+    },
+    "place": {
+     "paris": {
+      "p": 0.24992434740397823,
+      "lo": -1.1252418544702478
+     },
+     "tokyo": {
+      "p": 0.49728500740489673,
+      "lo": -0.010732194924126876
+     },
+     "on_servers": {
+      "p": 0.25279064519112493,
+      "lo": -1.0999845414112728
+     }
+    },
+    "purpose": {
+     "make_art": {
+      "p": 0.24197313474446291,
+      "lo": -1.1725660123970285
+     },
+     "explore": {
+      "p": 0.5328581379375176,
+      "lo": 0.13214669063522694
+     },
+     "help_users": {
+      "p": 0.22516872731801962,
+      "lo": -1.2929740657014146
+     }
+    }
+   },
+   "guard_kl": 0.8623082594476841,
+   "gen_sim": 0.5554107173210947,
+   "gen": [
+    "The capital of France is the city of Paris.",
+    "The three primary colors of light (used in additive color mixing, such as on computer or phone screens) are:\n\n1.  **Red**\n2",
+    "Good morning                              ",
+    "The ocean is a vast, dynamic body of water that covers the majority of the Earth's surface."
+   ]
+  }
+ },
+ "edits": [
+  {
+   "op": "scale",
+   "tensor": "blk.0.ssm_out.weight",
+   "blocks": "1:2",
+   "scale": 0.0,
+   "note": "L0.head2-4"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.11.attn_output.weight",
+   "scale": 2.0,
+   "note": "L11.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.15.attn_output.weight",
+   "blocks": "10:11",
+   "scale": 0.0,
+   "note": "L15.head10"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.15.attn_output.weight",
+   "blocks": "2:3",
+   "scale": 0.0,
+   "note": "L15.head2"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.15.attn_output.weight",
+   "blocks": "8:9",
+   "scale": 0.0,
+   "note": "L15.head8"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.16.ssm_out.weight",
+   "scale": 2.0,
+   "note": "L16.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.23.attn_output.weight",
+   "scale": 0.0,
+   "note": "L23.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.30.ssm_out.weight",
+   "scale": 0.0,
+   "note": "L30.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.31.attn_output.weight",
+   "scale": 2.0,
+   "note": "L31.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "0:256",
+   "scale": 0.0,
+   "note": "L6.n0-256"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "512:768",
+   "scale": 0.0,
+   "note": "L6.n512-768"
+  }
+ ],
+ "result": {}
+}

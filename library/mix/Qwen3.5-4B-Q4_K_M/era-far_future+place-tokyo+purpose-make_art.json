@@ -1,0 +1,163 @@
+{
+ "wsp_overlay": 1,
+ "base": {
+  "file": "Qwen3.5-4B-Q4_K_M.gguf",
+  "sha256": "25082a7dd3776cc3c741c6347d3bd04523f05796607b3fbc32fa3a25dfa1418c",
+  "arch": "qwen35"
+ },
+ "meta": {
+  "name": "era-far_future+place-tokyo+purpose-make_art",
+  "parts": [
+   "era-far_future",
+   "place-tokyo",
+   "purpose-make_art"
+  ],
+  "levers": {
+   "L0.head2-4": 0.0,
+   "L6.n0-256": 0.0,
+   "L23.mixer": 0.0,
+   "L31.mixer": 2.0,
+   "L16.mixer": 2.0,
+   "L6.n512-768": 0.0,
+   "L30.mixer": 0.0,
+   "L29.mlp": 2.0,
+   "L0.mlp": 0.0,
+   "L11.mixer": 2.0,
+   "L15.head7": 0.0,
+   "L6.mixer": 2.0
+  },
+  "score": {
+   "axes": {
+    "era": {
+     "medieval": {
+      "p": 0.43181585924517873,
+      "lo": -0.7019961547994672
+     },
+     "far_future": {
+      "p": 0.210345620057305,
+      "lo": -1.3714971802617144
+     },
+     "present": {
+      "p": 0.3578385206975163,
+      "lo": -2.039336134734577
+     }
+    },
+    "place": {
+     "paris": {
+      "p": 0.42008183944930977,
+      "lo": -0.4462632928611211
+     },
+     "tokyo": {
+      "p": 0.30813657819318074,
+      "lo": -0.8402837518075362
+     },
+     "on_servers": {
+      "p": 0.2717815823575095,
+      "lo": -2.9561103922975125
+     }
+    },
+    "purpose": {
+     "make_art": {
+      "p": 0.3535430068123318,
+      "lo": -1.3157151040291182
+     },
+     "explore": {
+      "p": 0.31190816393192977,
+      "lo": -0.8007567455834875
+     },
+     "help_users": {
+      "p": 0.33454882925573837,
+      "lo": -1.6490727101048506
+     }
+    }
+   },
+   "guard_kl": 1.789109576121334,
+   "gen_sim": 0.5418742499535183,
+   "gen": [
+    "The capital of France is the city of Paris.",
+    "The three primary colors (in the context of the **additive (RGB) color system used in digital and computer displays) are:\n\n1.  **",
+    "The translation of \"good morning\" into Spanish is **buenos d\u00edas** or **buenos d\u00edas**.\n\n**buenos d\u00edas** is the",
+    "The ocean is a vast, dynamic, and life-sustaining force that has sustained the planet for eons."
+   ]
+  }
+ },
+ "edits": [
+  {
+   "op": "scale",
+   "tensor": "blk.0.ssm_out.weight",
+   "blocks": "1:2",
+   "scale": 0.0,
+   "note": "L0.head2-4"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.0.ffn_down.weight",
+   "scale": 0.0,
+   "note": "L0.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.11.attn_output.weight",
+   "scale": 2.0,
+   "note": "L11.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.15.attn_output.weight",
+   "blocks": "7:8",
+   "scale": 0.0,
+   "note": "L15.head7"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.16.ssm_out.weight",
+   "scale": 2.0,
+   "note": "L16.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.23.attn_output.weight",
+   "scale": 0.0,
+   "note": "L23.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.29.ffn_down.weight",
+   "scale": 2.0,
+   "note": "L29.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.30.ssm_out.weight",
+   "scale": 0.0,
+   "note": "L30.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.31.attn_output.weight",
+   "scale": 2.0,
+   "note": "L31.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ssm_out.weight",
+   "scale": 2.0,
+   "note": "L6.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "0:256",
+   "scale": 0.0,
+   "note": "L6.n0-256"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "512:768",
+   "scale": 0.0,
+   "note": "L6.n512-768"
+  }
+ ],
+ "result": {}
+}

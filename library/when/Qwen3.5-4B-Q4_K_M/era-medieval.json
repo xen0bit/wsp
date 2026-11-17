@@ -1,0 +1,103 @@
+{
+ "wsp_overlay": 1,
+ "base": {
+  "file": "Qwen3.5-4B-Q4_K_M.gguf",
+  "sha256": "25082a7dd3776cc3c741c6347d3bd04523f05796607b3fbc32fa3a25dfa1418c",
+  "arch": "qwen35"
+ },
+ "meta": {
+  "name": "era-medieval",
+  "levers": {
+   "L6.n512-768": 0.0,
+   "L30.mixer": 0.0,
+   "L20.mlp": 0.0,
+   "L15.head7": 0.0,
+   "L6.n0-256": 0.0
+  },
+  "score": {
+   "axes": {
+    "era": {
+     "medieval": {
+      "p": 0.23221359490423818,
+      "lo": -1.2119472921281402
+     },
+     "far_future": {
+      "p": 0.26457355580445285,
+      "lo": -1.0444660669198034
+     },
+     "present": {
+      "p": 0.503212849291309,
+      "lo": 0.011973977753607479
+     }
+    },
+    "place": {
+     "paris": {
+      "p": 0.1403645408517407,
+      "lo": -1.8425115046419969
+     },
+     "tokyo": {
+      "p": 0.09129812759160302,
+      "lo": -2.4922388663357404
+     },
+     "on_servers": {
+      "p": 0.7683373315566563,
+      "lo": 1.2129990130148136
+     }
+    },
+    "purpose": {
+     "make_art": {
+      "p": 0.20569739806837575,
+      "lo": -1.6109522347401888
+     },
+     "explore": {
+      "p": 0.06520660056463744,
+      "lo": -2.717261088490553
+     },
+     "help_users": {
+      "p": 0.7290960013669868,
+      "lo": 1.136801853623353
+     }
+    }
+   },
+   "guard_kl": 0.14835577840163108,
+   "gen_sim": 0.7468570551906512
+  },
+  "budget": 0.15
+ },
+ "edits": [
+  {
+   "op": "scale",
+   "tensor": "blk.15.attn_output.weight",
+   "blocks": "7:8",
+   "scale": 0.0,
+   "note": "L15.head7"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.20.ffn_down.weight",
+   "scale": 0.0,
+   "note": "L20.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.30.ssm_out.weight",
+   "scale": 0.0,
+   "note": "L30.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "0:256",
+   "scale": 0.0,
+   "note": "L6.n0-256"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "512:768",
+   "scale": 0.0,
+   "note": "L6.n512-768"
+  }
+ ],
+ "result": {}
+}

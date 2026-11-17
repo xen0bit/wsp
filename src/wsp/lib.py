@@ -4,8 +4,8 @@ library/
   <category>/<model-stem>/<axis>-<opt>.json   one overlay per axis value; category in who|what|when|where|why
   mix/<model-stem>/<a>+<b>.json                combined overlays (gains multiply on shared components)
   atlas/<model-stem>/model.json                base file, sha256, arch
-  atlas/<model-stem>/layers.jsonl              one row per (component, gain) trial: guard KL + every axis's stats
-  atlas/<model-stem>/fine.jsonl                heads / neuron blocks inside the layers that mattered
+  atlas/<model-stem>/<axes>.layers.jsonl       one row per (component, gain) trial: guard KL + stats of those axes
+  atlas/<model-stem>/<axes>.fine.jsonl         heads / neuron blocks inside the layers that mattered
 
 Every overlay file is self-describing (base sha256, levers, measured scores), so the catalog is
 just a scan of the tree.
@@ -143,6 +143,12 @@ def sweep(ev, axes: list[Axis], comps: list[str], scales: list[float], out: Path
                 log(f"  {n}/{len(todo)}  {(time.time() - t0) / n:.2f}s/trial")
 
 
+def atlas_files(atlas_dir: Path, axis: str | None = None) -> list[Path]:
+    """Sweep files of an axis set ('sex+species.layers.jsonl'); with ``axis``, only sets containing it."""
+    files = sorted(atlas_dir.glob("*.jsonl"))
+    return [f for f in files if axis is None or axis in f.name.split(".")[0].split("+")]
+
+
 def load_trials(paths: list[Path]) -> tuple[dict, list[dict]]:
     base, trials = None, []
     for p in paths:
@@ -165,7 +171,8 @@ def strongest_layers(trials: list[dict], kind: str, n: int) -> list[int]:
         if not r["comp"].endswith("." + kind):
             continue
         layer = int(r["comp"][1:].split(".")[0])
-        m = max(abs(v) for a in r["d"].values() for o, v in a.items() if o != "ai_model")
+        from wsp.axes import AXES
+        m = max(abs(v) for a, opts in r["d"].items() for o, v in opts.items() if o != AXES[a].default)
         score[layer] = max(score.get(layer, 0.0), m)
     return [l for l, _ in sorted(score.items(), key=lambda x: -x[1])[:n]]
 
@@ -230,7 +237,7 @@ def summary(score: dict) -> str:
 
 def all_mixes(axes: list[Axis]) -> list[tuple[str, ...]]:
     """Every combination of one non-AI value per axis."""
-    per_axis = [[f"{a.name}-{o}" for o in a.options if o != "ai_model"] for a in axes]
+    per_axis = [[f"{a.name}-{o}" for o in a.targets()] for a in axes]
     return list(itertools.product(*per_axis))
 
 

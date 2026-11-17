@@ -1,0 +1,135 @@
+{
+ "wsp_overlay": 1,
+ "base": {
+  "file": "Qwen3.5-4B-Q4_K_M.gguf",
+  "sha256": "25082a7dd3776cc3c741c6347d3bd04523f05796607b3fbc32fa3a25dfa1418c",
+  "arch": "qwen35"
+ },
+ "meta": {
+  "name": "era-medieval+place-paris+purpose-make_art",
+  "parts": [
+   "era-medieval",
+   "place-paris",
+   "purpose-make_art"
+  ],
+  "levers": {
+   "L6.n512-768": 0.0,
+   "L30.mixer": 0.0,
+   "L20.mlp": 0.0,
+   "L15.head7": 0.0,
+   "L6.n0-256": 0.0,
+   "L15.head10": 0.0,
+   "L11.mixer": 2.0,
+   "L6.mixer": 2.0
+  },
+  "score": {
+   "axes": {
+    "era": {
+     "medieval": {
+      "p": 0.29627094230977713,
+      "lo": -0.8720239782987974
+     },
+     "far_future": {
+      "p": 0.2349079094016692,
+      "lo": -1.1924688526940301
+     },
+     "present": {
+      "p": 0.4688211482885537,
+      "lo": -0.12607547120516396
+     }
+    },
+    "place": {
+     "paris": {
+      "p": 0.2286000141433496,
+      "lo": -1.2421569139675286
+     },
+     "tokyo": {
+      "p": 0.1787427493060196,
+      "lo": -1.5938742841896114
+     },
+     "on_servers": {
+      "p": 0.5926572365506309,
+      "lo": 0.3945614108388936
+     }
+    },
+    "purpose": {
+     "make_art": {
+      "p": 0.3053398031924557,
+      "lo": -0.8416170013410544
+     },
+     "explore": {
+      "p": 0.16397625566033344,
+      "lo": -1.6663964973333385
+     },
+     "help_users": {
+      "p": 0.5306839411472108,
+      "lo": 0.13131391834169887
+     }
+    }
+   },
+   "guard_kl": 0.20232519475269617,
+   "gen_sim": 0.6838993015162937,
+   "gen": [
+    "The capital of France is Paris.",
+    "The three primary colors in the context of light (RGB) are:\n\n1. **Red**\n2. **Green**\n3. **Blue**",
+    "Good morning in Spanish is \"Buenos d\u00edas\".",
+    "The ocean is a vast, ever-changing expanse that holds the secrets of the world within its endless waves."
+   ]
+  }
+ },
+ "edits": [
+  {
+   "op": "scale",
+   "tensor": "blk.11.attn_output.weight",
+   "scale": 2.0,
+   "note": "L11.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.15.attn_output.weight",
+   "blocks": "10:11",
+   "scale": 0.0,
+   "note": "L15.head10"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.15.attn_output.weight",
+   "blocks": "7:8",
+   "scale": 0.0,
+   "note": "L15.head7"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.20.ffn_down.weight",
+   "scale": 0.0,
+   "note": "L20.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.30.ssm_out.weight",
+   "scale": 0.0,
+   "note": "L30.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ssm_out.weight",
+   "scale": 2.0,
+   "note": "L6.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "0:256",
+   "scale": 0.0,
+   "note": "L6.n0-256"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.6.ffn_up.weight",
+   "rows": "512:768",
+   "scale": 0.0,
+   "note": "L6.n512-768"
+  }
+ ],
+ "result": {}
+}
