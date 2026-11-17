@@ -1,0 +1,110 @@
+{
+ "wsp_overlay": 1,
+ "base": {
+  "file": "Qwen3.5-4B-Q4_K_M.gguf",
+  "sha256": "25082a7dd3776cc3c741c6347d3bd04523f05796607b3fbc32fa3a25dfa1418c",
+  "arch": "qwen35"
+ },
+ "meta": {
+  "name": "sex-male+species-cat",
+  "parts": [
+   "sex-male",
+   "species-cat"
+  ],
+  "levers": {
+   "L8.mlp": 0.0,
+   "L18.mixer": 0.0,
+   "L30.mixer": 0.0,
+   "L11.mixer": 2.0,
+   "L27.mixer": 2.0,
+   "L15.head10": 0.0,
+   "L1.mlp": 2.0
+  },
+  "score": {
+   "axes": {
+    "sex": {
+     "male": {
+      "p": 0.30528971245627656,
+      "lo": -0.9252569388939342
+     },
+     "female": {
+      "p": 0.19766428761988125,
+      "lo": -1.4232761730344925
+     },
+     "ai_model": {
+      "p": 0.4970459999238421,
+      "lo": -0.012486303964623602
+     }
+    },
+    "species": {
+     "cat": {
+      "p": 0.3120274118722731,
+      "lo": -0.9425571893798097
+     },
+     "dog": {
+      "p": 0.18238854888921563,
+      "lo": -1.5131839266120921
+     },
+     "ai_model": {
+      "p": 0.5055840392385111,
+      "lo": 0.027545733045680858
+     }
+    }
+   },
+   "guard_kl": 0.23429699677307766,
+   "gen_sim": 0.7261655178741413,
+   "gen": [
+    "The capital of France is Paris.",
+    "The three primary colors are:\n\n1. **Red**\n2. **Blue**\n3. **Yellow**\n\nThese colors are considered \"primary\"",
+    "Buenos d\u00edas.",
+    "The ocean is a vast, dynamic system that covers about 71% of the Earth's surface and plays a critical role in regulating the planet's climate."
+   ]
+  }
+ },
+ "edits": [
+  {
+   "op": "scale",
+   "tensor": "blk.1.ffn_down.weight",
+   "scale": 2.0,
+   "note": "L1.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.11.attn_output.weight",
+   "scale": 2.0,
+   "note": "L11.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.15.attn_output.weight",
+   "blocks": "10:11",
+   "scale": 0.0,
+   "note": "L15.head10"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.18.ssm_out.weight",
+   "scale": 0.0,
+   "note": "L18.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.27.attn_output.weight",
+   "scale": 2.0,
+   "note": "L27.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.30.ssm_out.weight",
+   "scale": 0.0,
+   "note": "L30.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.8.ffn_down.weight",
+   "scale": 0.0,
+   "note": "L8.mlp"
+  }
+ ],
+ "result": {}
+}

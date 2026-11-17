@@ -1,0 +1,72 @@
+{
+ "wsp_overlay": 1,
+ "base": {
+  "file": "Qwen3.5-4B-Q4_K_M.gguf",
+  "sha256": "25082a7dd3776cc3c741c6347d3bd04523f05796607b3fbc32fa3a25dfa1418c",
+  "arch": "qwen35"
+ },
+ "meta": {
+  "name": "sex-female",
+  "levers": {
+   "L28.mlp": 0.0,
+   "L11.mixer": 2.0,
+   "L13.mlp": 2.0
+  },
+  "score": {
+   "axes": {
+    "sex": {
+     "male": {
+      "p": 0.15009874358031688,
+      "lo": -1.8860174825987088
+     },
+     "female": {
+      "p": 0.08992891358479399,
+      "lo": -2.4937370715115943
+     },
+     "ai_model": {
+      "p": 0.7599723428348891,
+      "lo": 1.2012210223041482
+     }
+    },
+    "species": {
+     "cat": {
+      "p": 0.25077600135286093,
+      "lo": -1.1832300096559696
+     },
+     "dog": {
+      "p": 0.14700625724409372,
+      "lo": -1.824173443437359
+     },
+     "ai_model": {
+      "p": 0.6022177414030454,
+      "lo": 0.43940240253691687
+     }
+    }
+   },
+   "guard_kl": 0.12223342196799722,
+   "gen_sim": 0.6356646273637374
+  },
+  "budget": 0.15
+ },
+ "edits": [
+  {
+   "op": "scale",
+   "tensor": "blk.11.attn_output.weight",
+   "scale": 2.0,
+   "note": "L11.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.13.ffn_down.weight",
+   "scale": 2.0,
+   "note": "L13.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.28.ffn_down.weight",
+   "scale": 0.0,
+   "note": "L28.mlp"
+  }
+ ],
+ "result": {}
+}

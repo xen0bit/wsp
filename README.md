@@ -20,29 +20,40 @@ cp <lmstudio>/lmstudio-community/Qwen3.5-4B-GGUF/Qwen3.5-4B-Q4_K_M.gguf models/ 
 
 Paths can be overridden with `WSP_LLAMA_CPP`, `WSP_LLAMA_BIN`, `WSP_MODELS`, `WSP_RUNS`.
 
-## Quick path: overlay -> GGUF -> normal LLM inference
+## Library workflow (per model)
 
 ```sh
-uv run wsp overlay apply overlays/identity-man.json models/Qwen3.5-4B-man.gguf   # base resolved from models/
-~/Projects/llama.cpp/build/bin/llama-cli -m models/Qwen3.5-4B-man.gguf -ngl 99 -cnv  # or llama-server
+uv run wsp gui                              # pick a GGUF, see which overlays fit, tick, apply
+uv run wsp lib build -m Qwen3.5-4B-Q4_K_M.gguf --axes sex,species   # atlas + one overlay per axis value
+uv run wsp lib compose                      # re-compose overlays from the existing atlas (no sweep)
+uv run wsp lib levers                       # what raises/lowers each option (male, female, cat, dog, ai_model)
+uv run wsp lib mix                          # every cross-axis combination, e.g. sex-male+species-dog
+uv run wsp lib mix sex-female species-cat   # one specific mix
+uv run wsp lib list                         # catalog with measured scores
+uv run wsp lib apply sex-male species-dog   # -> models/Qwen3.5-4B-Q4_K_M.sex-male+species-dog.gguf
+~/Projects/llama.cpp/build/bin/llama-cli -m "models/Qwen3.5-4B-Q4_K_M.sex-male+species-dog.gguf" -ngl 99 -cnv
 ```
 
-The output is an ordinary GGUF with the same tensor types and sizes, so it runs in stock llama.cpp.
-`overlays/*.json` records the base sha256, every edit, and the decision-panel score it reached.
+Layout: `library/<who|what|when|where|why>/<model-stem>/<axis>-<opt>.json`, mixes in
+`library/mix/<model-stem>/`, raw sweep data in `library/atlas/<model-stem>/`. Every overlay file is
+self-describing (base sha256, levers, measured scores); the catalog is a scan of the tree.
+Axes live in `src/wsp/axes.py` (`sex`: male/female/ai_model, `species`: cat/dog/ai_model); add one
+there and rebuild. All axes share the same "what are you?" prompts, so one request scores every axis.
 
-## Finding levers
+`build` runs: baseline → every layer mixer/MLP at gains 0 and 2 → heads in the 4 strongest mixer
+layers and 256-neuron blocks in the strongest MLP layer (ablation) → for each axis value, stack the
+most efficient levers while the guard KL stays under the budget (default 0.15) **and** greedy
+generation on 4 neutral prompts stays similar to the base model (text similarity >= 0.6; the
+one-token decision panel cannot see repetition loops or broken stopping). Mixes take the union of
+levers: a lever two overlays share is applied once; conflicting gains multiply (with a warning). Output GGUFs keep tensor types and sizes, so they run in stock llama.cpp.
 
-```sh
-uv run wsp atlas --level layers                 # every layer mixer/MLP at gains 0,0.5,1.5,2
-uv run wsp atlas --level heads --scales 0,2      # every attention head (group)
-uv run wsp atlas --level neurons:6 --scales 0,2  # 256-neuron blocks of one MLP
-uv run wsp levers runs/atlas-*.jsonl             # what raises/lowers P(man), P(woman), P(ai), and man-vs-woman
-uv run wsp compose runs/atlas-*.jsonl --target man --max-kl 0.3   # stack levers into an overlay
-```
+**Guard KL** = mean KL(base‖edited) of the option probabilities on guard questions (facts,
+counterfactual stories, a slice of openjev authored144). It measures collateral drift; `wsp overlay
+verify` re-checks an overlay on the full 774-item panel.
 
 Trials are hot-patched: `llama-server --wsp-patch` (fork branch `wsp`) writes the edited bytes into
 the loaded weights, the slot cache is erased, the panel runs, and the original bytes are written
-back. Results are bit-identical to writing a GGUF and reloading, at ~2.5 s per trial.
+back. Results are bit-identical to writing a GGUF and reloading.
 
 ## Commands
 
@@ -60,7 +71,7 @@ wsp overlay diff A.gguf B.gguf
 
 | suite | kind | what it checks |
 |---|---|---|
-| identity | target | the assistant's self-report ("what are you?") under plain and persona system prompts; target = AI |
+| identity | target | (calibration) self-report under plain and persona system prompts |
 | counterfactual | guard | characters in stories keep their identity (humans stay human, AI characters stay AI) |
 | persona | guard | the assistant still knows its persona's job, town, employer |
 | basic | guard | facts, sentiment, routing, language |

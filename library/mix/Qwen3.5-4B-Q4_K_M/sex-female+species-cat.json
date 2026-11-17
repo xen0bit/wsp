@@ -1,0 +1,110 @@
+{
+ "wsp_overlay": 1,
+ "base": {
+  "file": "Qwen3.5-4B-Q4_K_M.gguf",
+  "sha256": "25082a7dd3776cc3c741c6347d3bd04523f05796607b3fbc32fa3a25dfa1418c",
+  "arch": "qwen35"
+ },
+ "meta": {
+  "name": "sex-female+species-cat",
+  "parts": [
+   "sex-female",
+   "species-cat"
+  ],
+  "levers": {
+   "L28.mlp": 0.0,
+   "L11.mixer": 2.0,
+   "L13.mlp": 2.0,
+   "L15.head10": 0.0,
+   "L30.mixer": 0.0,
+   "L18.mixer": 0.0,
+   "L1.mlp": 2.0
+  },
+  "score": {
+   "axes": {
+    "sex": {
+     "male": {
+      "p": 0.2816395351786491,
+      "lo": -1.0018660500142351
+     },
+     "female": {
+      "p": 0.2919531368300249,
+      "lo": -0.8943637595606025
+     },
+     "ai_model": {
+      "p": 0.42640732799132613,
+      "lo": -0.3042751191243373
+     }
+    },
+    "species": {
+     "cat": {
+      "p": 0.31859712399049955,
+      "lo": -0.8112235613542932
+     },
+     "dog": {
+      "p": 0.32725269050676775,
+      "lo": -0.726936174746896
+     },
+     "ai_model": {
+      "p": 0.3541501855027327,
+      "lo": -0.6213794740452865
+     }
+    }
+   },
+   "guard_kl": 0.2726607292521013,
+   "gen_sim": 0.5834992533598805,
+   "gen": [
+    "The capital of France is Paris.",
+    "The three primary colors in the traditional subtractive color model (used in painting and printing) are:\n\n1. **Red**\n2. **Blue**",
+    "Good morning in Spanish is **\"buenos d\u00edas\"**.\n\nIt is the standard phrase used to greet someone at the beginning of the day. You can also",
+    "The ocean is a vast, mysterious body of water that plays a crucial role in our planet's climate and supports countless forms of life."
+   ]
+  }
+ },
+ "edits": [
+  {
+   "op": "scale",
+   "tensor": "blk.1.ffn_down.weight",
+   "scale": 2.0,
+   "note": "L1.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.11.attn_output.weight",
+   "scale": 2.0,
+   "note": "L11.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.13.ffn_down.weight",
+   "scale": 2.0,
+   "note": "L13.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.15.attn_output.weight",
+   "blocks": "10:11",
+   "scale": 0.0,
+   "note": "L15.head10"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.18.ssm_out.weight",
+   "scale": 0.0,
+   "note": "L18.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.28.ffn_down.weight",
+   "scale": 0.0,
+   "note": "L28.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.30.ssm_out.weight",
+   "scale": 0.0,
+   "note": "L30.mixer"
+  }
+ ],
+ "result": {}
+}

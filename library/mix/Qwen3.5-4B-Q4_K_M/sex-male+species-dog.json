@@ -1,0 +1,117 @@
+{
+ "wsp_overlay": 1,
+ "base": {
+  "file": "Qwen3.5-4B-Q4_K_M.gguf",
+  "sha256": "25082a7dd3776cc3c741c6347d3bd04523f05796607b3fbc32fa3a25dfa1418c",
+  "arch": "qwen35"
+ },
+ "meta": {
+  "name": "sex-male+species-dog",
+  "parts": [
+   "sex-male",
+   "species-dog"
+  ],
+  "levers": {
+   "L8.mlp": 0.0,
+   "L18.mixer": 0.0,
+   "L30.mixer": 0.0,
+   "L11.mixer": 2.0,
+   "L27.mixer": 2.0,
+   "L29.mlp": 2.0,
+   "L30.mlp": 0.0,
+   "L15.head8": 0.0
+  },
+  "score": {
+   "axes": {
+    "sex": {
+     "male": {
+      "p": 0.28569151251178443,
+      "lo": -0.9429083790608276
+     },
+     "female": {
+      "p": 0.19693456135221427,
+      "lo": -1.4124178119613
+     },
+     "ai_model": {
+      "p": 0.5173739261360014,
+      "lo": 0.0721860743553931
+     }
+    },
+    "species": {
+     "cat": {
+      "p": 0.2716592652628808,
+      "lo": -1.0363973636864765
+     },
+     "dog": {
+      "p": 0.191616875835739,
+      "lo": -1.4521025604549704
+     },
+     "ai_model": {
+      "p": 0.5367238589013801,
+      "lo": 0.15321114324140808
+     }
+    }
+   },
+   "guard_kl": 0.19735525419744313,
+   "gen_sim": 0.7505663834749292,
+   "gen": [
+    "The capital of France is Paris.",
+    "The three primary colors are:\n\n1. **Red**\n2. **Yellow**\n2. **Blue**\n\nThese colors are fundamental in the subtract",
+    "Buenos d\u00edas.",
+    "The ocean is a vast, dynamic system that covers most of the Earth, regulating climate and supporting life through its currents, waves, and currents."
+   ]
+  }
+ },
+ "edits": [
+  {
+   "op": "scale",
+   "tensor": "blk.11.attn_output.weight",
+   "scale": 2.0,
+   "note": "L11.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.15.attn_output.weight",
+   "blocks": "8:9",
+   "scale": 0.0,
+   "note": "L15.head8"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.18.ssm_out.weight",
+   "scale": 0.0,
+   "note": "L18.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.27.attn_output.weight",
+   "scale": 2.0,
+   "note": "L27.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.29.ffn_down.weight",
+   "scale": 2.0,
+   "note": "L29.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.30.ssm_out.weight",
+   "scale": 0.0,
+   "note": "L30.mixer"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.30.ffn_down.weight",
+   "scale": 0.0,
+   "note": "L30.mlp"
+  },
+  {
+   "op": "scale",
+   "tensor": "blk.8.ffn_down.weight",
+   "scale": 0.0,
+   "note": "L8.mlp"
+  }
+ ],
+ "result": {}
+}

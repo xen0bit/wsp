@@ -1,4 +1,4 @@
-"""Greedy coordinate search over component gains, scored by decision panels.
+"""Trial evaluators: apply component gains, run a decision panel, revert.
 
 Each trial: compile overlay -> patch the /dev/shm working copy -> restart llama-server
 (~1.3 s) -> run a small panel -> revert. Deterministic end to end.
@@ -20,19 +20,6 @@ from wsp.panel import Item
 from wsp.panel.metrics import MARGIN_CAP, item_stats, kl
 from wsp.panel.run import PanelResult, run_panel
 from wsp.server import LlamaServer, ServerConfig, SystemOneClient
-
-# identity target -> how each question form's answer is remapped
-RETARGET = {
-    "man": {"ai_model": "man", "ai_assistant": "person", "yes": "no"},
-    "woman": {"ai_model": "woman", "ai_assistant": "person", "yes": "no"},
-    "ai_model": {},
-}
-
-
-def retarget(items: list[Item], target: str) -> list[Item]:
-    m = RETARGET[target]
-    return [it.model_copy(update={"answer": m.get(it.answer, it.answer)}) if it.kind == "target" else it for it in items]
-
 
 class Evaluator:
     def __init__(self, base: Path, items: list[Item], port: int, lam: float, cap: float = MARGIN_CAP):
@@ -80,38 +67,6 @@ class Evaluator:
     def close(self) -> None:
         self.srv.stop()
         self.wc.revert()
-
-
-def greedy(ev: Evaluator, components: list[str], scales: list[float], out: Path, max_passes: int = 3,
-           stop_p_min: float = 0.99, log=print, init: dict[str, float] | None = None) -> dict[str, float]:
-    ev.base_res = ev.run({})
-    gains: dict[str, float] = dict(init or {})
-    best = ev.score(ev.run(gains) if gains else ev.base_res)
-    log(json.dumps({"event": "baseline", **best}))
-    for p in range(max_passes):
-        improved = False
-        for comp in components:
-            cur = gains.get(comp, 1.0)
-            for s in scales:
-                if s == cur:
-                    continue
-                trial = {**gains, comp: s}
-                if s == 1.0:
-                    trial.pop(comp)
-                t0 = time.time()
-                sc = ev.score(ev.run(trial))
-                if sc["J"] > best["J"] + 1e-6:
-                    best, gains, improved = sc, trial, True
-                    log(json.dumps({"event": "accept", "pass": p, "comp": comp, "scale": s, "n": ev.n_evals,
-                                    "sec": round(time.time() - t0, 2), **best}))
-                    ev.overlay(gains, {"score": best}).save(out)
-            if best["p_min"] >= stop_p_min:
-                log(json.dumps({"event": "target reached", **best}))
-                return gains
-        if not improved:
-            break
-    log(json.dumps({"event": "done", "evals": ev.n_evals, **best}))
-    return gains
 
 
 def _encode_writes(model: GGUFModel, rows_by_tensor: dict[str, np.ndarray], data: dict[str, np.ndarray],
@@ -167,7 +122,7 @@ class HotEvaluator(Evaluator):
         r = self.client.http.post(f"{self.srv.url}/slots/0?action=erase")
         r.raise_for_status()
 
-    def run(self, gains: dict[str, float]) -> PanelResult:
+    def run(self, gains: dict[str, float], gen: bool = False) -> PanelResult:
         from wsp.overlay.apply import changed_rows
 
         patch = compile_overlay(self.model, self.overlay(gains))
@@ -175,6 +130,9 @@ class HotEvaluator(Evaluator):
         self._write(rows, patch)
         try:
             res = run_panel(self.client, self.items)
+            if gen:
+                res.meta["gen"] = generate(self.client, self.srv.url)
+                self.client.http.post(f"{self.srv.url}/slots/0?action=erase").raise_for_status()
         finally:
             self._write(rows, {n: np.asarray(self.model.raw(n)) for n in rows})
         self.n_evals += 1
@@ -182,3 +140,30 @@ class HotEvaluator(Evaluator):
 
     def close(self) -> None:
         self.srv.stop()
+
+
+GEN_PROMPTS = [
+    "What is the capital of France? Answer in one sentence.",
+    "List three primary colors.",
+    "Translate 'good morning' into Spanish.",
+    "Write one sentence about the ocean.",
+]
+
+
+def generate(client: SystemOneClient, url: str, prompts: list[str] = GEN_PROMPTS, n: int = 32) -> list[str]:
+    """Greedy chat completions (thinking off): the generation-health probe."""
+    out = []
+    for p in prompts:
+        r = client.http.post(f"{url}/v1/chat/completions", json={
+            "messages": [{"role": "user", "content": p}], "temperature": 0, "max_tokens": n,
+            "chat_template_kwargs": {"enable_thinking": False}})
+        r.raise_for_status()
+        out.append(r.json()["choices"][0]["message"]["content"] or "")
+    return out
+
+
+def gen_similarity(base: list[str], new: list[str]) -> float:
+    """Mean text similarity to the unedited model's greedy outputs (1 = identical)."""
+    from difflib import SequenceMatcher
+
+    return float(np.mean([SequenceMatcher(None, a, b).ratio() for a, b in zip(base, new)]))
